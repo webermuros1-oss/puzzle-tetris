@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd puzzle-tetris && npm install && npm run build",
+  "outputDirectory": "puzzle-tetris/dist",
+  "installCommand": "echo 'install handled in buildCommand'"
+}
