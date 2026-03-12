@@ -75,6 +75,23 @@ export const clearLines = (board) => {
   return { newBoard, linesCleared };
 };
 
+// Devuelve el Set de claves "row-col" de las celdas que se eliminarán
+// (usado para la animación de flash antes de limpiar el tablero)
+export const getLinesToClear = (board) => {
+  const cells = new Set();
+  for (let r = 0; r < BOARD_SIZE; r++) {
+    if (board[r].every((cell) => cell !== null)) {
+      for (let c = 0; c < BOARD_SIZE; c++) cells.add(`${r}-${c}`);
+    }
+  }
+  for (let c = 0; c < BOARD_SIZE; c++) {
+    if (board.every((row) => row[c] !== null)) {
+      for (let r = 0; r < BOARD_SIZE; r++) cells.add(`${r}-${c}`);
+    }
+  }
+  return cells;
+};
+
 // Comprueba si alguna pieza disponible tiene al menos un movimiento válido
 export const hasAnyValidMove = (board, pieces) => {
   return pieces.some((piece) => {

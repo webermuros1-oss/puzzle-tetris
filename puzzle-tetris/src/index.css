@@ -1,145 +1,312 @@
-/* ═══════════════════════════════════════════════
-   Puzzle Tetris — Estilos globales
-   ═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════════════════
+   Puzzle — Diseño visual
+   Tema: oscuro espacial · piezas cuadradas redondeadas · explosiones
+   ══════════════════════════════════════════════════════════════════ */
 
-/* ── Reset y base ────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ── Fondo espacial ─────────────────────────────────────────────── */
 body {
   min-height: 100dvh;
-  background: #0f0e17;
-  color: #fffffe;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+  color: #f1f5f9;
+  background-color: #060b18;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% 0%,   #0d2040 0%, transparent 70%),
+    radial-gradient(ellipse 50% 80% at 90% 50%,   #1a0a30 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 10% 80%,   #041428 0%, transparent 60%);
   display: flex;
   justify-content: center;
-  align-items: flex-start;
   overflow-x: hidden;
 }
 
-#root {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
+#root { width: 100%; display: flex; justify-content: center; }
 
-/* ── Layout principal ────────────────────────── */
+/* ── Layout ─────────────────────────────────────────────────────── */
 .app {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 16px 12px 32px;
-  gap: 16px;
+  padding: 20px 12px 40px;
+  gap: 18px;
   width: 100%;
-  max-width: 540px;
+  max-width: 520px;
 }
 
-/* ── Cabecera ────────────────────────────────── */
+/* ── Cabecera ────────────────────────────────────────────────────── */
 .header {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
 }
 
 .game-title {
-  font-size: clamp(1.4rem, 5vw, 2rem);
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: #fffffe;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(1.5rem, 5.5vw, 2.1rem);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: #f1f5f9;
+  text-shadow: 0 0 24px rgba(255,255,255,0.12);
 }
 
-/* ── Marcador ────────────────────────────────── */
+.title-gem {
+  font-size: 0.9em;
+  color: #22d3ee;
+  text-shadow: 0 0 12px #22d3ee, 0 0 24px rgba(34,211,238,0.5);
+  animation: gemPulse 3s ease-in-out infinite;
+}
+
+@keyframes gemPulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.55; }
+}
+
+/* ── Marcador ────────────────────────────────────────────────────── */
 .scoreboard {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 4px 6px;
+  backdrop-filter: blur(8px);
 }
 
 .score-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #1a1a2e;
-  border: 1px solid #2d2d44;
-  border-radius: 10px;
-  padding: 6px 16px;
+  padding: 6px 18px;
   min-width: 80px;
 }
 
+.score-divider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255,255,255,0.1);
+}
+
 .score-label {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 1.5px;
-  color: #888;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.35);
   text-transform: uppercase;
 }
 
 .score-value {
-  font-size: 1.4rem;
+  font-size: 1.45rem;
   font-weight: 800;
-  color: #FFE66D;
+  color: #fbbf24;
   font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
-/* ── Instrucciones ───────────────────────────── */
+.score-value--best { color: #a78bfa; }
+
+/* +Puntos flotante */
+.score-delta {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #4ade80;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: floatUp 1s ease forwards;
+  text-shadow: 0 0 8px rgba(74,222,128,0.7);
+}
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  60%  { opacity: 1; transform: translateY(-22px) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-36px) scale(0.9); }
+}
+
+/* ── Instrucciones ───────────────────────────────────────────────── */
 .instructions {
-  font-size: 0.78rem;
-  color: #666;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.25);
   text-align: center;
 }
 
-/* ── Tablero 8×8 ─────────────────────────────── */
+/* ════════════════════════════════════════════════════════════════════
+   TABLERO 8×8
+   ════════════════════════════════════════════════════════════════════ */
 .board {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   grid-template-rows: repeat(8, 1fr);
-  width: min(500px, 94vw);
+  width: min(480px, 92vw);
   aspect-ratio: 1;
-  background: #1a1a2e;
-  border-radius: 12px;
-  border: 2px solid #2d2d44;
+
+  background: #080e1c;
+  /* Líneas de cuadrícula sutiles */
+  background-image:
+    linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+  background-size: calc(100% / 8) calc(100% / 8);
+
+  border-radius: 20px;
+  border: 1px solid rgba(99,102,241,0.18);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.5),
+    0 0 40px rgba(99,102,241,0.07),
+    0 24px 64px rgba(0,0,0,0.8);
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
-/* ── Celda individual ────────────────────────── */
+/* Celda: slot cuadrado que centra el bloque */
 .cell {
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: background-color 0.08s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.cell--filled {
-  border-color: rgba(0, 0, 0, 0.2);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25),
-              inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+/* ════════════════════════════════════════════════════════════════════
+   BLOQUE (cell-dot) — CUADRADO REDONDEADO
+   ════════════════════════════════════════════════════════════════════
+   border-radius: 26% da esquinas redondeadas bien marcadas
+   manteniendo la forma cuadrada. Escala con el tamaño del elemento.
+   El highlight radial en la esquina superior-izquierda da sensación 3D. */
+.cell-dot {
+  width: 86%;
+  height: 86%;
+  border-radius: 26%;
+
+  background:
+    radial-gradient(
+      circle at 30% 28%,
+      rgba(255,255,255,0.5) 0%,
+      rgba(255,255,255,0.0) 50%
+    ),
+    var(--dot-color);
+
+  box-shadow:
+    0 0 6px  var(--dot-color),
+    0 0 14px rgba(255,255,255,0.08),
+    0 2px 6px rgba(0,0,0,0.55),
+    inset 0 1px 2px rgba(255,255,255,0.4),
+    inset 0 -1px 2px rgba(0,0,0,0.3);
+
+  /* Pop elástico al colocar */
+  animation: dotPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
-.cell--preview-valid {
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+@keyframes dotPop {
+  from { transform: scale(0.35); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
 }
 
-.cell--preview-invalid {
-  border-color: rgba(239, 68, 68, 0.3);
+/* ── Preview válido: pulso verde ─────────────────────────────────── */
+.cell-dot--preview {
+  animation: none;
 }
 
-/* ── Panel de piezas ─────────────────────────── */
+.cell-dot--preview-valid {
+  opacity: 0.75;
+  box-shadow:
+    0 0 0 2px rgba(74,222,128,0.65),
+    0 0 14px var(--dot-color),
+    0 0 28px rgba(74,222,128,0.25);
+  animation: previewPulse 0.85s ease-in-out infinite;
+}
+
+.cell-dot--preview-invalid {
+  opacity: 0.45;
+  box-shadow:
+    0 0 0 2px rgba(239,68,68,0.65),
+    0 0 10px rgba(239,68,68,0.4);
+}
+
+@keyframes previewPulse {
+  0%, 100% { opacity: 0.75; }
+  50%       { opacity: 0.4; }
+}
+
+/* ── Animación de eliminación: FLASH + EXPLOSIÓN ────────────────────
+   1. Flash blanco cegador (brightness 4)
+   2. Escala rápida hacia afuera
+   3. Encogimiento a 0 con desvanecimiento */
+.cell-dot--clearing {
+  animation: cellExplode 0.42s cubic-bezier(0.2, 0, 0.4, 1) forwards !important;
+  /* No dejar que la animación dotPop interfiera */
+}
+
+@keyframes cellExplode {
+  0%   {
+    transform: scale(1);
+    opacity: 1;
+    filter: brightness(1) saturate(1);
+    box-shadow: 0 0 6px var(--dot-color);
+  }
+  18%  {
+    transform: scale(1.55);
+    opacity: 1;
+    filter: brightness(4.5) saturate(0.3);
+    box-shadow: 0 0 30px var(--dot-color), 0 0 60px rgba(255,255,255,0.6);
+  }
+  55%  {
+    transform: scale(0.9);
+    opacity: 0.6;
+    filter: brightness(2) saturate(1.5);
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+    filter: brightness(3);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PARTÍCULAS DE EXPLOSIÓN
+   ════════════════════════════════════════════════════════════════════
+   Divs con position:fixed. Las variables --pdx y --pdy definen
+   la dirección y distancia de vuelo de cada partícula. */
+.explosion-particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  animation: explodeParticle 0.68s cubic-bezier(0.15, 0, 0.55, 1) forwards;
+}
+
+@keyframes explodeParticle {
+  0%   {
+    transform: translate(0, 0) scale(1);
+    opacity: 1;
+  }
+  40%  {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--pdx), var(--pdy)) scale(0.05);
+    opacity: 0;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   PANEL DE PIEZAS
+   ════════════════════════════════════════════════════════════════════ */
 .piece-container {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  width: min(500px, 94vw);
-  background: #1a1a2e;
-  border: 2px solid #2d2d44;
-  border-radius: 12px;
-  padding: 16px 8px;
+  width: min(480px, 92vw);
   min-height: 120px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  padding: 18px 8px;
+  background: rgba(8, 14, 28, 0.9);
+  border: 1px solid rgba(99,102,241,0.14);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  backdrop-filter: blur(4px);
 }
 
 .piece-slot {
@@ -147,142 +314,167 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100px;
+  min-height: 90px;
 }
 
-/* Espacio vacío donde estaba una pieza ya usada */
 .piece-slot-empty {
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
 }
 
-/* Contenedor de la pieza arrastrable */
+.piece-cell-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .piece-wrapper {
-  transition: transform 0.12s ease, opacity 0.12s ease;
+  padding: 8px;
+  border-radius: 12px;
+  transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.15s ease;
 }
 
 .piece-wrapper:hover:not(.piece-wrapper--disabled) {
-  transform: scale(1.08);
+  transform: scale(1.12);
+  filter: brightness(1.18);
 }
 
 .piece-wrapper:active:not(.piece-wrapper--disabled) {
-  transform: scale(0.95);
-  opacity: 0.7;
+  transform: scale(0.91);
+  transition-duration: 0.07s;
 }
 
 .piece-wrapper--disabled {
-  opacity: 0.35;
+  opacity: 0.22;
+  pointer-events: none;
 }
 
-/* ── Combo Toast ─────────────────────────────── */
+/* ── Combo Toast ─────────────────────────────────────────────────── */
 .combo-toast {
   position: fixed;
-  top: 30%;
+  top: 28%;
   left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 230, 109, 0.95);
-  color: #1a1a2e;
-  font-size: 1.5rem;
-  font-weight: 800;
-  padding: 12px 28px;
-  border-radius: 40px;
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #fbbf24;
   pointer-events: none;
   z-index: 8000;
   white-space: nowrap;
-  animation: toastPop 1.2s ease forwards;
-  box-shadow: 0 4px 20px rgba(255, 230, 109, 0.4);
+  animation: toastPop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  text-shadow: 0 0 20px rgba(251,191,36,0.8), 0 0 40px rgba(251,191,36,0.4);
+  letter-spacing: -0.5px;
 }
 
 @keyframes toastPop {
-  0%   { opacity: 0; transform: translateX(-50%) scale(0.7); }
-  20%  { opacity: 1; transform: translateX(-50%) scale(1.1); }
-  80%  { opacity: 1; transform: translateX(-50%) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) scale(0.9); }
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.5) translateY(20px); }
+  25%  { opacity: 1; transform: translateX(-50%) scale(1.15) translateY(0); }
+  70%  { opacity: 1; transform: translateX(-50%) scale(1) translateY(-10px); }
+  100% { opacity: 0; transform: translateX(-50%) scale(0.85) translateY(-30px); }
 }
 
-/* ── Game Over overlay ───────────────────────── */
+/* ── Game Over Overlay ───────────────────────────────────────────── */
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background: rgba(4, 6, 16, 0.88);
+  backdrop-filter: blur(6px);
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 9000;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn 0.25s ease;
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .game-over-card {
-  background: #1a1a2e;
-  border: 2px solid #2d2d44;
-  border-radius: 20px;
-  padding: 40px 48px;
+  background: linear-gradient(160deg, #0d1829 0%, #0a0f1e 100%);
+  border: 1px solid rgba(99,102,241,0.25);
+  border-radius: 28px;
+  padding: 40px 44px;
   text-align: center;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  animation: cardPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  align-items: center;
+  gap: 20px;
+  animation: cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.04),
+    0 0 60px rgba(99,102,241,0.15),
+    0 30px 80px rgba(0,0,0,0.9);
+  max-width: 340px;
+  width: 90vw;
 }
 
 @keyframes cardPop {
-  from { transform: scale(0.7); opacity: 0; }
-  to   { transform: scale(1);   opacity: 1; }
+  from { transform: scale(0.75) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);       opacity: 1; }
 }
 
-.game-over-card h2 {
+.game-over-icon {
+  font-size: 3rem;
+  animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
+}
+
+@keyframes iconBounce {
+  from { transform: scale(0) rotate(-20deg); }
+  to   { transform: scale(1) rotate(0deg); }
+}
+
+.game-over-title {
   font-size: 2rem;
   font-weight: 900;
-  color: #FF6B6B;
+  color: #f43f5e;
+  text-shadow: 0 0 20px rgba(244,63,94,0.5);
+  letter-spacing: -1px;
 }
 
-.game-over-card p {
-  font-size: 1.1rem;
-  color: #aaa;
+.game-over-scores {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.game-over-card strong {
-  color: #FFE66D;
+.go-score-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  font-size: 0.95rem;
 }
+
+.go-score-row span   { color: rgba(255,255,255,0.5); font-weight: 500; }
+.go-score-row strong { color: #fbbf24; font-weight: 800; font-size: 1.1rem; }
+
+.go-score-row--best         { border: 1px solid rgba(167,139,250,0.25); }
+.go-score-row--best strong  { color: #a78bfa; }
 
 .restart-btn {
-  margin-top: 8px;
-  padding: 14px 32px;
-  background: linear-gradient(135deg, #4ECDC4, #45B7D1);
-  color: #0f0e17;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  color: #fff;
+  font-family: inherit;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  letter-spacing: 0.5px;
+  box-shadow: 0 4px 20px rgba(99,102,241,0.4);
 }
 
-.restart-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
-}
+.restart-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,0.55); }
+.restart-btn:active { transform: translateY(1px);  box-shadow: 0 2px 10px rgba(99,102,241,0.3); }
 
-.restart-btn:active {
-  transform: translateY(0);
-}
-
-/* ── Responsive ──────────────────────────────── */
+/* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 400px) {
-  .game-title {
-    font-size: 1.2rem;
-  }
-  .score-value {
-    font-size: 1.1rem;
-  }
-  .piece-container {
-    padding: 10px 4px;
-  }
+  .game-title        { font-size: 1.3rem; }
+  .score-value       { font-size: 1.15rem; }
+  .piece-container   { min-height: 100px; padding: 12px 4px; }
+  .game-over-card    { padding: 28px 24px; }
 }

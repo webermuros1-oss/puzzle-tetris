@@ -1,9 +1,14 @@
 import Cell from './Cell';
 import { BOARD_SIZE } from '../logic/boardUtils';
 
-// Tablero principal 8x8
-const Board = ({ board, boardRef, hoverCell, dragPiece, isValidPlacement }) => {
-  // Calcular qué celdas forman parte del preview de colocación
+/**
+ * Board — tablero 8×8
+ *
+ * Recibe flashCells (Set de claves "row-col") para reproducir la animación
+ * de eliminación antes de que las celdas desaparezcan del estado.
+ */
+const Board = ({ board, boardRef, hoverCell, dragPiece, isValidPlacement, flashCells }) => {
+  // Celdas que formarían parte del preview de colocación
   const previewCells = new Set();
 
   if (hoverCell && dragPiece) {
@@ -25,14 +30,14 @@ const Board = ({ board, boardRef, hoverCell, dragPiece, isValidPlacement }) => {
       {board.map((row, rIdx) =>
         row.map((cell, cIdx) => {
           const key = `${rIdx}-${cIdx}`;
-          const isPreview = previewCells.has(key);
           return (
             <Cell
               key={key}
               color={cell}
-              isPreview={isPreview}
+              isPreview={previewCells.has(key)}
               isValid={isValidPlacement}
               previewColor={dragPiece?.color}
+              isClearing={flashCells?.has(key) ?? false}
             />
           );
         })

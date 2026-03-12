@@ -1,15 +1,15 @@
-// Colores disponibles para las piezas
+// Paleta neón vibrante — cada color brilla bien sobre el fondo oscuro
 export const PIECE_COLORS = [
-  '#FF6B6B', // rojo coral
-  '#4ECDC4', // turquesa
-  '#45B7D1', // azul cielo
-  '#96CEB4', // verde menta
-  '#FFEAA7', // amarillo suave
-  '#DDA0DD', // ciruela
-  '#98FB98', // verde pálido
-  '#F0A500', // naranja
-  '#A78BFA', // violeta
-  '#F87171', // rojo suave
+  '#22d3ee', // cian eléctrico
+  '#a855f7', // morado neón
+  '#84cc16', // lima neón
+  '#f97316', // naranja fuego
+  '#ec4899', // rosa hot
+  '#eab308', // amarillo dorado
+  '#10b981', // esmeralda
+  '#f43f5e', // rojo carmesí
+  '#6366f1', // índigo
+  '#14b8a6', // teal
 ];
 
 // Todas las formas de piezas posibles (matrices 2D: 1=bloque, 0=vacío)

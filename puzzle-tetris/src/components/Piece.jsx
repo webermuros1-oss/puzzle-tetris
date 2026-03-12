@@ -1,11 +1,15 @@
-// Tamaño de cada bloque dentro del panel de piezas disponibles
-const CELL_SIZE = 30;
-const GAP = 2;
+/**
+ * Piece — pieza arrastrable del panel inferior
+ *
+ * Cada bloque de la pieza se renderiza como un círculo (border-radius 50%)
+ * centrado dentro de su celda, igual que en el tablero, para coherencia visual.
+ * El tamaño CELL_SIZE debe ser comparable al de las celdas del tablero.
+ */
+const CELL_SIZE = 32; // px por bloque — un poco más pequeño que el tablero
+const GAP = 3;        // separación entre bloques en el panel
 
-// Renderiza una pieza arrastrable en el panel inferior
 const Piece = ({ piece, onDragStart, disabled }) => {
   if (!piece) {
-    // Espacio vacío donde ya se usó la pieza
     return <div className="piece-slot-empty" />;
   }
 
@@ -22,10 +26,9 @@ const Piece = ({ piece, onDragStart, disabled }) => {
     <div
       className={`piece-wrapper${disabled ? ' piece-wrapper--disabled' : ''}`}
       onMouseDown={handleMouseDown}
-      style={{ cursor: disabled ? 'not-allowed' : 'grab' }}
+      style={{ cursor: disabled ? 'default' : 'grab' }}
     >
       <div
-        className="piece-grid"
         style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${cols}, ${CELL_SIZE}px)`,
@@ -35,16 +38,20 @@ const Piece = ({ piece, onDragStart, disabled }) => {
       >
         {piece.shape.map((row, rIdx) =>
           row.map((cell, cIdx) => (
-            <div
-              key={`${rIdx}-${cIdx}`}
-              style={{
-                width: CELL_SIZE,
-                height: CELL_SIZE,
-                backgroundColor: cell ? piece.color : 'transparent',
-                borderRadius: cell ? 6 : 0,
-                boxShadow: cell ? `inset 0 2px 0 rgba(255,255,255,0.3), inset 0 -2px 0 rgba(0,0,0,0.2)` : 'none',
-              }}
-            />
+            /* Celda contenedora — transparente si no hay bloque */
+            <div key={`${rIdx}-${cIdx}`} className="piece-cell-slot">
+              {cell ? (
+                /* Círculo neón: usa CSS variable --dot-color igual que en el tablero */
+                <div
+                  className="cell-dot"
+                  style={{
+                    '--dot-color': piece.color,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                />
+              ) : null}
+            </div>
           ))
         )}
       </div>
