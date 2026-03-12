@@ -1,14 +1,7 @@
 import Cell from './Cell';
 import { BOARD_SIZE } from '../logic/boardUtils';
 
-/**
- * Board — tablero 8×8
- *
- * Recibe flashCells (Set de claves "row-col") para reproducir la animación
- * de eliminación antes de que las celdas desaparezcan del estado.
- */
-const Board = ({ board, boardRef, hoverCell, dragPiece, isValidPlacement, flashCells }) => {
-  // Celdas que formarían parte del preview de colocación
+const Board = ({ board, boardRef, hoverCell, dragPiece, isValidPlacement, flashCells, shaking }) => {
   const previewCells = new Set();
 
   if (hoverCell && dragPiece) {
@@ -26,7 +19,7 @@ const Board = ({ board, boardRef, hoverCell, dragPiece, isValidPlacement, flashC
   }
 
   return (
-    <div className="board" ref={boardRef}>
+    <div className={`board${shaking ? ' board--shake' : ''}`} ref={boardRef}>
       {board.map((row, rIdx) =>
         row.map((cell, cIdx) => {
           const key = `${rIdx}-${cIdx}`;

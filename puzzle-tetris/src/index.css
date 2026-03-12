@@ -1,20 +1,21 @@
 /* ══════════════════════════════════════════════════════════════════
-   Puzzle — Diseño visual
-   Tema: oscuro espacial · piezas cuadradas redondeadas · explosiones
+   Puzzle — Tema CLARO  · piezas cuadradas redondeadas · explosiones
    ══════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800;900&display=swap');
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── Fondo espacial ─────────────────────────────────────────────── */
+/* ── Fondo claro con degradado suave ────────────────────────────── */
 body {
   min-height: 100dvh;
   font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
-  color: #f1f5f9;
-  background-color: #060b18;
+  color: #1e293b;
+  background-color: #e8eef8;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% 0%,   #0d2040 0%, transparent 70%),
-    radial-gradient(ellipse 50% 80% at 90% 50%,   #1a0a30 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 10% 80%,   #041428 0%, transparent 60%);
+    radial-gradient(ellipse 80% 50% at 50% 0%,   #dde8ff 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 90% 60%,   #ede8ff 0%, transparent 60%),
+    radial-gradient(ellipse 40% 50% at 10% 90%,   #d8eeff 0%, transparent 60%);
   display: flex;
   justify-content: center;
   overflow-x: hidden;
@@ -28,7 +29,7 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 20px 12px 40px;
-  gap: 18px;
+  gap: 16px;
   width: 100%;
   max-width: 520px;
 }
@@ -50,31 +51,30 @@ body {
   font-size: clamp(1.5rem, 5.5vw, 2.1rem);
   font-weight: 900;
   letter-spacing: -1px;
-  color: #f1f5f9;
-  text-shadow: 0 0 24px rgba(255,255,255,0.12);
+  color: #1e293b;
 }
 
 .title-gem {
   font-size: 0.9em;
-  color: #22d3ee;
-  text-shadow: 0 0 12px #22d3ee, 0 0 24px rgba(34,211,238,0.5);
+  color: #6366f1;
+  text-shadow: 0 0 12px rgba(99,102,241,0.5);
   animation: gemPulse 3s ease-in-out infinite;
 }
 
 @keyframes gemPulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.55; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.6; transform: scale(0.9); }
 }
 
-/* ── Marcador ────────────────────────────────────────────────────── */
+/* ── Marcador — tarjeta blanca ───────────────────────────────────── */
 .scoreboard {
   display: flex;
   align-items: center;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.07);
   border-radius: 16px;
   padding: 4px 6px;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
 }
 
 .score-item {
@@ -88,26 +88,26 @@ body {
 .score-divider {
   width: 1px;
   height: 32px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(0,0,0,0.08);
 }
 
 .score-label {
   font-size: 0.58rem;
   font-weight: 700;
   letter-spacing: 2px;
-  color: rgba(255,255,255,0.35);
+  color: #94a3b8;
   text-transform: uppercase;
 }
 
 .score-value {
   font-size: 1.45rem;
   font-weight: 800;
-  color: #fbbf24;
+  color: #7c3aed;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
 
-.score-value--best { color: #a78bfa; }
+.score-value--best { color: #db2777; }
 
 /* +Puntos flotante */
 .score-delta {
@@ -116,11 +116,10 @@ body {
   right: -4px;
   font-size: 0.85rem;
   font-weight: 800;
-  color: #4ade80;
+  color: #16a34a;
   pointer-events: none;
   white-space: nowrap;
   animation: floatUp 1s ease forwards;
-  text-shadow: 0 0 8px rgba(74,222,128,0.7);
 }
 
 @keyframes floatUp {
@@ -133,12 +132,12 @@ body {
 .instructions {
   font-size: 0.72rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.25);
+  color: #94a3b8;
   text-align: center;
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   TABLERO 8×8
+   TABLERO 8×8 — blanco con cuadrícula sutil
    ════════════════════════════════════════════════════════════════════ */
 .board {
   display: grid;
@@ -147,20 +146,35 @@ body {
   width: min(480px, 92vw);
   aspect-ratio: 1;
 
-  background: #080e1c;
-  /* Líneas de cuadrícula sutiles */
+  background-color: #ffffff;
   background-image:
-    linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
+    linear-gradient(rgba(0,0,0,0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.055) 1px, transparent 1px);
   background-size: calc(100% / 8) calc(100% / 8);
 
   border-radius: 20px;
-  border: 1px solid rgba(99,102,241,0.18);
+  border: 2px solid rgba(99,102,241,0.15);
   box-shadow:
-    0 0 0 1px rgba(0,0,0,0.5),
-    0 0 40px rgba(99,102,241,0.07),
-    0 24px 64px rgba(0,0,0,0.8);
+    0 2px 0 rgba(255,255,255,0.9) inset,
+    0 8px 32px rgba(99,102,241,0.12),
+    0 20px 48px rgba(0,0,0,0.1);
   overflow: hidden;
+}
+
+/* ── Sacudida del tablero al hacer BOOM ──────────────────────────── */
+.board--shake {
+  animation: boardShake 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes boardShake {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  12%  { transform: translate(-5px, 3px) rotate(-0.7deg); }
+  25%  { transform: translate(5px, -3px) rotate(0.7deg); }
+  37%  { transform: translate(-4px, 2px) rotate(-0.4deg); }
+  50%  { transform: translate(4px, -2px) rotate(0.3deg); }
+  65%  { transform: translate(-2px, 1px) rotate(-0.15deg); }
+  80%  { transform: translate(2px, -1px) rotate(0.1deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
 }
 
 /* Celda: slot cuadrado que centra el bloque */
@@ -171,11 +185,10 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   BLOQUE (cell-dot) — CUADRADO REDONDEADO
-   ════════════════════════════════════════════════════════════════════
-   border-radius: 26% da esquinas redondeadas bien marcadas
-   manteniendo la forma cuadrada. Escala con el tamaño del elemento.
-   El highlight radial en la esquina superior-izquierda da sensación 3D. */
+   BLOQUE — cuadrado redondeado con highlight 3D
+   border-radius: 26% = esquinas marcadas sin llegar a círculo.
+   El highlight radial superior-izquierdo da efecto de profundidad.
+   ════════════════════════════════════════════════════════════════════ */
 .cell-dot {
   width: 86%;
   height: 86%;
@@ -184,60 +197,53 @@ body {
   background:
     radial-gradient(
       circle at 30% 28%,
-      rgba(255,255,255,0.5) 0%,
-      rgba(255,255,255,0.0) 50%
+      rgba(255,255,255,0.55) 0%,
+      rgba(255,255,255,0.0) 52%
     ),
     var(--dot-color);
 
   box-shadow:
-    0 0 6px  var(--dot-color),
-    0 0 14px rgba(255,255,255,0.08),
-    0 2px 6px rgba(0,0,0,0.55),
-    inset 0 1px 2px rgba(255,255,255,0.4),
-    inset 0 -1px 2px rgba(0,0,0,0.3);
+    0 0 8px  var(--dot-color),
+    0 0 18px rgba(0,0,0,0.06),
+    0 2px 6px rgba(0,0,0,0.22),
+    inset 0 1px 2px rgba(255,255,255,0.45),
+    inset 0 -1px 2px rgba(0,0,0,0.2);
 
-  /* Pop elástico al colocar */
   animation: dotPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 @keyframes dotPop {
-  from { transform: scale(0.35); opacity: 0; }
-  to   { transform: scale(1);    opacity: 1; }
+  from { transform: scale(0.3); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
 }
 
-/* ── Preview válido: pulso verde ─────────────────────────────────── */
-.cell-dot--preview {
-  animation: none;
-}
+/* ── Preview válido ──────────────────────────────────────────────── */
+.cell-dot--preview { animation: none; }
 
 .cell-dot--preview-valid {
-  opacity: 0.75;
+  opacity: 0.72;
   box-shadow:
-    0 0 0 2px rgba(74,222,128,0.65),
-    0 0 14px var(--dot-color),
-    0 0 28px rgba(74,222,128,0.25);
+    0 0 0 2px rgba(22,163,74,0.7),
+    0 0 14px var(--dot-color);
   animation: previewPulse 0.85s ease-in-out infinite;
 }
 
 .cell-dot--preview-invalid {
-  opacity: 0.45;
+  opacity: 0.4;
   box-shadow:
-    0 0 0 2px rgba(239,68,68,0.65),
-    0 0 10px rgba(239,68,68,0.4);
+    0 0 0 2px rgba(220,38,38,0.7),
+    0 0 10px rgba(220,38,38,0.3);
 }
 
 @keyframes previewPulse {
-  0%, 100% { opacity: 0.75; }
-  50%       { opacity: 0.4; }
+  0%, 100% { opacity: 0.72; }
+  50%       { opacity: 0.35; }
 }
 
-/* ── Animación de eliminación: FLASH + EXPLOSIÓN ────────────────────
-   1. Flash blanco cegador (brightness 4)
-   2. Escala rápida hacia afuera
-   3. Encogimiento a 0 con desvanecimiento */
+/* ── Animación de eliminación: FLASH → EXPANSIÓN → DESAPARICIÓN ─────
+   1. Flash blanco cegador  2. Escala rápida  3. Encoge a 0      */
 .cell-dot--clearing {
   animation: cellExplode 0.42s cubic-bezier(0.2, 0, 0.4, 1) forwards !important;
-  /* No dejar que la animación dotPop interfiera */
 }
 
 @keyframes cellExplode {
@@ -245,18 +251,17 @@ body {
     transform: scale(1);
     opacity: 1;
     filter: brightness(1) saturate(1);
-    box-shadow: 0 0 6px var(--dot-color);
   }
-  18%  {
-    transform: scale(1.55);
+  15%  {
+    transform: scale(1.7);
     opacity: 1;
-    filter: brightness(4.5) saturate(0.3);
-    box-shadow: 0 0 30px var(--dot-color), 0 0 60px rgba(255,255,255,0.6);
+    filter: brightness(5) saturate(0.2);
+    box-shadow: 0 0 40px var(--dot-color), 0 0 80px rgba(255,255,255,0.8);
   }
   55%  {
-    transform: scale(0.9);
-    opacity: 0.6;
-    filter: brightness(2) saturate(1.5);
+    transform: scale(0.85);
+    opacity: 0.5;
+    filter: brightness(2.5) saturate(1.8);
   }
   100% {
     transform: scale(0);
@@ -266,34 +271,86 @@ body {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   BOOM OVERLAY — flash de pantalla + texto explosivo
+   ════════════════════════════════════════════════════════════════════ */
+.boom-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Flash blanco que cubre toda la pantalla brevemente */
+.boom-flash {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.72);
+  animation: boomFlash 0.35s ease-out forwards;
+}
+
+@keyframes boomFlash {
+  0%   { opacity: 0; }
+  12%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Texto BOOM grande, animado con rebote elástico */
+.boom-text {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2.8rem, 13vw, 5.5rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  color: #fff;
+  /* Sombra múltiple para efecto de profundidad y resplandor */
+  text-shadow:
+    0 0 20px  #fbbf24,
+    0 0 45px  #f97316,
+    0 0 90px  #ef4444,
+    3px 3px 0 #b45309,
+    6px 6px 0 rgba(0,0,0,0.2);
+  animation: boomPop 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  white-space: nowrap;
+}
+
+@keyframes boomPop {
+  0%   { transform: scale(0.05) rotate(-12deg); opacity: 0; }
+  18%  { transform: scale(1.45) rotate(4deg);   opacity: 1; }
+  35%  { transform: scale(0.9) rotate(-2deg);   opacity: 1; }
+  50%  { transform: scale(1.08) rotate(1deg);   opacity: 1; }
+  65%  { transform: scale(0.97) rotate(0deg);   opacity: 1; }
+  80%  { transform: scale(1) rotate(0deg);      opacity: 1; }
+  100% { transform: scale(0.7) translateY(-50px); opacity: 0; }
+}
+
+/* ════════════════════════════════════════════════════════════════════
    PARTÍCULAS DE EXPLOSIÓN
-   ════════════════════════════════════════════════════════════════════
-   Divs con position:fixed. Las variables --pdx y --pdy definen
-   la dirección y distancia de vuelo de cada partícula. */
+   Cada partícula es un div fixed que vuela según --pdx y --pdy.
+   Mezcla círculos y cuadraditos (--square) para más variedad.
+   ════════════════════════════════════════════════════════════════════ */
 .explosion-particle {
   position: fixed;
   border-radius: 50%;
   pointer-events: none;
   z-index: 10000;
-  animation: explodeParticle 0.68s cubic-bezier(0.15, 0, 0.55, 1) forwards;
+  animation: explodeParticle 0.8s cubic-bezier(0.15, 0.05, 0.55, 1) forwards;
+}
+
+.explosion-particle--square {
+  border-radius: 20%;
 }
 
 @keyframes explodeParticle {
-  0%   {
-    transform: translate(0, 0) scale(1);
-    opacity: 1;
-  }
-  40%  {
-    opacity: 0.9;
-  }
-  100% {
-    transform: translate(var(--pdx), var(--pdy)) scale(0.05);
-    opacity: 0;
-  }
+  0%   { transform: translate(0, 0) scale(1) rotate(0deg);    opacity: 1; }
+  30%  { opacity: 1; }
+  100% { transform: translate(var(--pdx), var(--pdy)) scale(0.05) rotate(180deg); opacity: 0; }
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   PANEL DE PIEZAS
+   PANEL DE PIEZAS — tarjeta blanca
    ════════════════════════════════════════════════════════════════════ */
 .piece-container {
   display: flex;
@@ -302,11 +359,10 @@ body {
   width: min(480px, 92vw);
   min-height: 120px;
   padding: 18px 8px;
-  background: rgba(8, 14, 28, 0.9);
-  border: 1px solid rgba(99,102,241,0.14);
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.07);
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 
 .piece-slot {
@@ -317,10 +373,7 @@ body {
   min-height: 90px;
 }
 
-.piece-slot-empty {
-  width: 70px;
-  height: 70px;
-}
+.piece-slot-empty { width: 70px; height: 70px; }
 
 .piece-cell-slot {
   display: flex;
@@ -336,16 +389,16 @@ body {
 
 .piece-wrapper:hover:not(.piece-wrapper--disabled) {
   transform: scale(1.12);
-  filter: brightness(1.18);
+  filter: brightness(1.12);
 }
 
 .piece-wrapper:active:not(.piece-wrapper--disabled) {
-  transform: scale(0.91);
+  transform: scale(0.88);
   transition-duration: 0.07s;
 }
 
 .piece-wrapper--disabled {
-  opacity: 0.22;
+  opacity: 0.2;
   pointer-events: none;
 }
 
@@ -356,12 +409,12 @@ body {
   left: 50%;
   font-size: 1.8rem;
   font-weight: 900;
-  color: #fbbf24;
+  color: #7c3aed;
   pointer-events: none;
   z-index: 8000;
   white-space: nowrap;
   animation: toastPop 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  text-shadow: 0 0 20px rgba(251,191,36,0.8), 0 0 40px rgba(251,191,36,0.4);
+  text-shadow: 0 0 16px rgba(124,58,237,0.4);
   letter-spacing: -0.5px;
 }
 
@@ -376,8 +429,8 @@ body {
 .overlay {
   position: fixed;
   inset: 0;
-  background: rgba(4, 6, 16, 0.88);
-  backdrop-filter: blur(6px);
+  background: rgba(224, 230, 245, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -388,8 +441,8 @@ body {
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 .game-over-card {
-  background: linear-gradient(160deg, #0d1829 0%, #0a0f1e 100%);
-  border: 1px solid rgba(99,102,241,0.25);
+  background: #ffffff;
+  border: 1px solid rgba(99,102,241,0.18);
   border-radius: 28px;
   padding: 40px 44px;
   text-align: center;
@@ -399,9 +452,8 @@ body {
   gap: 20px;
   animation: cardPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.04),
-    0 0 60px rgba(99,102,241,0.15),
-    0 30px 80px rgba(0,0,0,0.9);
+    0 0 0 1px rgba(0,0,0,0.04),
+    0 8px 40px rgba(0,0,0,0.15);
   max-width: 340px;
   width: 90vw;
 }
@@ -424,8 +476,7 @@ body {
 .game-over-title {
   font-size: 2rem;
   font-weight: 900;
-  color: #f43f5e;
-  text-shadow: 0 0 20px rgba(244,63,94,0.5);
+  color: #dc2626;
   letter-spacing: -1px;
 }
 
@@ -441,16 +492,16 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background: rgba(255,255,255,0.04);
+  background: #f8faff;
   border-radius: 10px;
   font-size: 0.95rem;
 }
 
-.go-score-row span   { color: rgba(255,255,255,0.5); font-weight: 500; }
-.go-score-row strong { color: #fbbf24; font-weight: 800; font-size: 1.1rem; }
+.go-score-row span   { color: #64748b; font-weight: 500; }
+.go-score-row strong { color: #7c3aed; font-weight: 800; font-size: 1.1rem; }
 
-.go-score-row--best         { border: 1px solid rgba(167,139,250,0.25); }
-.go-score-row--best strong  { color: #a78bfa; }
+.go-score-row--best        { border: 1px solid rgba(219,39,119,0.2); }
+.go-score-row--best strong { color: #db2777; }
 
 .restart-btn {
   width: 100%;
@@ -465,16 +516,17 @@ body {
   border-radius: 14px;
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+  box-shadow: 0 4px 20px rgba(99,102,241,0.35);
 }
 
-.restart-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,0.55); }
-.restart-btn:active { transform: translateY(1px);  box-shadow: 0 2px 10px rgba(99,102,241,0.3); }
+.restart-btn:hover  { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,0.5); }
+.restart-btn:active { transform: translateY(1px);  box-shadow: 0 2px 10px rgba(99,102,241,0.25); }
 
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 400px) {
-  .game-title        { font-size: 1.3rem; }
-  .score-value       { font-size: 1.15rem; }
-  .piece-container   { min-height: 100px; padding: 12px 4px; }
-  .game-over-card    { padding: 28px 24px; }
+  .game-title      { font-size: 1.3rem; }
+  .score-value     { font-size: 1.15rem; }
+  .piece-container { min-height: 100px; padding: 12px 4px; }
+  .game-over-card  { padding: 28px 24px; }
+  .boom-text       { font-size: 2.4rem; letter-spacing: -1px; }
 }

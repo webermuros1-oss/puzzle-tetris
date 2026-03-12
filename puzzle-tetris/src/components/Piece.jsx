@@ -1,12 +1,5 @@
-/**
- * Piece — pieza arrastrable del panel inferior
- *
- * Cada bloque de la pieza se renderiza como un círculo (border-radius 50%)
- * centrado dentro de su celda, igual que en el tablero, para coherencia visual.
- * El tamaño CELL_SIZE debe ser comparable al de las celdas del tablero.
- */
-const CELL_SIZE = 32; // px por bloque — un poco más pequeño que el tablero
-const GAP = 3;        // separación entre bloques en el panel
+const CELL_SIZE = 32;
+const GAP = 3;
 
 const Piece = ({ piece, onDragStart, disabled }) => {
   if (!piece) {
@@ -15,7 +8,8 @@ const Piece = ({ piece, onDragStart, disabled }) => {
 
   const cols = Math.max(...piece.shape.map((row) => row.length));
 
-  const handleMouseDown = (e) => {
+  // Soporta ratón y touch
+  const handleStart = (e) => {
     if (!disabled) {
       e.preventDefault();
       onDragStart(e);
@@ -25,8 +19,9 @@ const Piece = ({ piece, onDragStart, disabled }) => {
   return (
     <div
       className={`piece-wrapper${disabled ? ' piece-wrapper--disabled' : ''}`}
-      onMouseDown={handleMouseDown}
-      style={{ cursor: disabled ? 'default' : 'grab' }}
+      onMouseDown={handleStart}
+      onTouchStart={handleStart}
+      style={{ cursor: disabled ? 'default' : 'grab', touchAction: 'none' }}
     >
       <div
         style={{
@@ -38,10 +33,8 @@ const Piece = ({ piece, onDragStart, disabled }) => {
       >
         {piece.shape.map((row, rIdx) =>
           row.map((cell, cIdx) => (
-            /* Celda contenedora — transparente si no hay bloque */
             <div key={`${rIdx}-${cIdx}`} className="piece-cell-slot">
               {cell ? (
-                /* Círculo neón: usa CSS variable --dot-color igual que en el tablero */
                 <div
                   className="cell-dot"
                   style={{
