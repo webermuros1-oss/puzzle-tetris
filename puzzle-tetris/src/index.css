@@ -1,0 +1,288 @@
+/* ═══════════════════════════════════════════════
+   Puzzle Tetris — Estilos globales
+   ═══════════════════════════════════════════════ */
+
+/* ── Reset y base ────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100dvh;
+  background: #0f0e17;
+  color: #fffffe;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* ── Layout principal ────────────────────────── */
+.app {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px 32px;
+  gap: 16px;
+  width: 100%;
+  max-width: 540px;
+}
+
+/* ── Cabecera ────────────────────────────────── */
+.header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-title {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fffffe;
+}
+
+/* ── Marcador ────────────────────────────────── */
+.scoreboard {
+  display: flex;
+  gap: 12px;
+}
+
+.score-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #1a1a2e;
+  border: 1px solid #2d2d44;
+  border-radius: 10px;
+  padding: 6px 16px;
+  min-width: 80px;
+}
+
+.score-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.score-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #FFE66D;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Instrucciones ───────────────────────────── */
+.instructions {
+  font-size: 0.78rem;
+  color: #666;
+  text-align: center;
+}
+
+/* ── Tablero 8×8 ─────────────────────────────── */
+.board {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(8, 1fr);
+  width: min(500px, 94vw);
+  aspect-ratio: 1;
+  background: #1a1a2e;
+  border-radius: 12px;
+  border: 2px solid #2d2d44;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Celda individual ────────────────────────── */
+.cell {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background-color 0.08s ease;
+}
+
+.cell--filled {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25),
+              inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.cell--preview-valid {
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.15);
+}
+
+.cell--preview-invalid {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+/* ── Panel de piezas ─────────────────────────── */
+.piece-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: min(500px, 94vw);
+  background: #1a1a2e;
+  border: 2px solid #2d2d44;
+  border-radius: 12px;
+  padding: 16px 8px;
+  min-height: 120px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.piece-slot {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+}
+
+/* Espacio vacío donde estaba una pieza ya usada */
+.piece-slot-empty {
+  width: 80px;
+  height: 80px;
+}
+
+/* Contenedor de la pieza arrastrable */
+.piece-wrapper {
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.piece-wrapper:hover:not(.piece-wrapper--disabled) {
+  transform: scale(1.08);
+}
+
+.piece-wrapper:active:not(.piece-wrapper--disabled) {
+  transform: scale(0.95);
+  opacity: 0.7;
+}
+
+.piece-wrapper--disabled {
+  opacity: 0.35;
+}
+
+/* ── Combo Toast ─────────────────────────────── */
+.combo-toast {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 230, 109, 0.95);
+  color: #1a1a2e;
+  font-size: 1.5rem;
+  font-weight: 800;
+  padding: 12px 28px;
+  border-radius: 40px;
+  pointer-events: none;
+  z-index: 8000;
+  white-space: nowrap;
+  animation: toastPop 1.2s ease forwards;
+  box-shadow: 0 4px 20px rgba(255, 230, 109, 0.4);
+}
+
+@keyframes toastPop {
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.7); }
+  20%  { opacity: 1; transform: translateX(-50%) scale(1.1); }
+  80%  { opacity: 1; transform: translateX(-50%) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) scale(0.9); }
+}
+
+/* ── Game Over overlay ───────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.game-over-card {
+  background: #1a1a2e;
+  border: 2px solid #2d2d44;
+  border-radius: 20px;
+  padding: 40px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: cardPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+}
+
+@keyframes cardPop {
+  from { transform: scale(0.7); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+.game-over-card h2 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: #FF6B6B;
+}
+
+.game-over-card p {
+  font-size: 1.1rem;
+  color: #aaa;
+}
+
+.game-over-card strong {
+  color: #FFE66D;
+}
+
+.restart-btn {
+  margin-top: 8px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #4ECDC4, #45B7D1);
+  color: #0f0e17;
+  font-size: 1rem;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  letter-spacing: 0.5px;
+}
+
+.restart-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(78, 205, 196, 0.4);
+}
+
+.restart-btn:active {
+  transform: translateY(0);
+}
+
+/* ── Responsive ──────────────────────────────── */
+@media (max-width: 400px) {
+  .game-title {
+    font-size: 1.2rem;
+  }
+  .score-value {
+    font-size: 1.1rem;
+  }
+  .piece-container {
+    padding: 10px 4px;
+  }
+}
