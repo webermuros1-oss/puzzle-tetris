@@ -4,6 +4,10 @@ import { SPR, getPlayerFrame, getEnemyFrame, getBossFrame } from './logic/sprite
 import { createPlayer, updatePlayer, tryThrow } from './logic/playerLogic.js';
 import { createEnemy, hitEnemy, tryPushBall, updateEnemies, spawnParticles, tryBossShoot } from './logic/enemyLogic.js';
 import { overlaps, bounceProjectileWalls } from './logic/collisionLogic.js';
+import {
+  playJump, playShoot, playEnemyHit, playSnowball,
+  playBossHit, playPlayerDamage, playLevelClear, playDeath, playBossDeath,
+} from './logic/soundManager.js';
 
 import spritesheetSrc from './img/tiletPersonages.png';
 import bgSrc          from './img/mundoSnow.png';
@@ -61,8 +65,9 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
       const idata = octx.getImageData(0, 0, oc.width, oc.height);
       const d     = idata.data;
       for (let i = 0; i < d.length; i += 4) {
-        // Si el píxel es casi blanco (≥230 en los 3 canales) → transparente
-        if (d[i] >= 230 && d[i+1] >= 230 && d[i+2] >= 230) {
+        // Solo píxeles casi puros blancos (≥248) → transparente
+        // Umbral más alto para no borrar partes claras del sprite
+        if (d[i] >= 248 && d[i+1] >= 248 && d[i+2] >= 248) {
           d[i+3] = 0;
         }
       }
@@ -165,6 +170,13 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
       updatePlayer(player, keys, platforms, now);
       if (keys.shoot) tryThrow(player, projectiles, now);
 
+      // Sonidos del jugador
+      if (player.soundEvent) {
+        if (player.soundEvent === 'jump')  playJump();
+        if (player.soundEvent === 'shoot') playShoot();
+        player.soundEvent = null;
+      }
+
       // ── Proyectiles (con parábola) ──
       for (const proj of projectiles) {
         if (!proj.active) continue;
@@ -192,6 +204,8 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
               const pColor = isBoss ? '#ffd700' : '#c7f0ff';
               spawnParticles(particles, e.x + e.w / 2, e.y + e.h / 2, pColor, isBoss ? 12 : 6);
               onScoreChange?.(gs.score);
+              if (isBoss) playBossHit(); else playEnemyHit();
+              if (turnedBall) playSnowball();
             }
           }
         }
@@ -227,8 +241,9 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
             gs.lives--;
             onLivesChange?.(gs.lives);
             spawnParticles(particles, player.x + player.w / 2, player.y, '#7dd3fc', 10);
+            playPlayerDamage();
             if (gs.lives <= 0) {
-              gs.phase = 'dead'; gs.phaseTimer = 2200;
+              gs.phase = 'dead'; gs.phaseTimer = 2200; playDeath();
             } else {
               initLevel(levelIndex, { score: gs.score, lives: gs.lives, invincibleUntil: now + 2000 });
             }
@@ -256,7 +271,9 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
             if (gs.lives <= 0) {
               gs.phase      = 'dead';
               gs.phaseTimer = 2200;
+              playDeath();
             } else {
+              playPlayerDamage();
               // Respawn manteniendo score/lives, con invencibilidad 2 seg
               initLevel(levelIndex, {
                 score:           gs.score,
@@ -277,6 +294,7 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
         player.anim   = 'celebrate';
         gs.score      += 500;
         onScoreChange?.(gs.score);
+        playLevelClear();
       }
 
       // ── Partículas ──
