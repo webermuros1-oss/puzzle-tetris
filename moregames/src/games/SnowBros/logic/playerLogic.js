@@ -16,6 +16,7 @@ export function createPlayer() {
     anim: 'idle',
     lastThrow: 0,
     animTick: 0,
+    soundEvent: null, // 'jump' | 'shoot' — consumido por GameCanvas
   };
 }
 
@@ -33,8 +34,9 @@ export function updatePlayer(player, keys, platforms, now) {
 
   // ── Salto ──
   if (keys.jump && player.onGround) {
-    player.vy       = JUMP_FORCE;
-    player.onGround = false;
+    player.vy         = JUMP_FORCE;
+    player.onGround   = false;
+    player.soundEvent = 'jump';
   }
 
   // ── Gravedad y posición ──
@@ -68,8 +70,9 @@ export function updatePlayer(player, keys, platforms, now) {
 // Crea un proyectil si el cooldown lo permite
 export function tryThrow(player, projectiles, now) {
   if (now - player.lastThrow < THROW_CD) return;
-  player.lastThrow = now;
-  player.anim = 'throw';
+  player.lastThrow  = now;
+  player.anim       = 'throw';
+  player.soundEvent = 'shoot';
 
   // Proyectil más grande = más fácil acertar
   // Parte desde el centro-lateral del jugador

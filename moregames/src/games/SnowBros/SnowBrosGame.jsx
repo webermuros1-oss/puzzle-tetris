@@ -5,79 +5,74 @@ import { LEVELS } from './logic/levelData.js';
 import './styles/snowbros.css';
 
 export default function SnowBrosGame({ onBack }) {
-  const [level,      setLevel]      = useState(0);
-  const [score,      setScore]      = useState(0);
-  const [lives,      setLives]      = useState(3);
-  const [screen,     setScreen]     = useState('ready');
-  // gameKey fuerza re-mount del GameCanvas al reiniciar (soluciona bug de reintentar)
-  const [gameKey,    setGameKey]    = useState(0);
+  const [level,   setLevel]   = useState(0);
+  const [score,   setScore]   = useState(0);
+  const [lives,   setLives]   = useState(3);
+  const [screen,  setScreen]  = useState('ready');
+  const [gameKey, setGameKey] = useState(0);
   const canvasRef = useRef(null);
 
-  // ── Callbacks del canvas ────────────────────────────────────
   const handleLevelClear = useCallback(() => {
     const next = level + 1;
-    if (next >= LEVELS.length) {
-      setScreen('win');
-    } else {
-      setLevel(next);
-      setScreen('ready');
-    }
+    if (next >= LEVELS.length) setScreen('win');
+    else { setLevel(next); setScreen('ready'); }
   }, [level]);
 
-  const handleGameOver = useCallback(() => {
-    setScreen('over');
-  }, []);
+  const handleGameOver = useCallback(() => setScreen('over'), []);
 
-  // ── Botones táctiles ────────────────────────────────────────
+  // Botones táctiles
   const press   = (key) => canvasRef.current?._virtualKey?.(key, true);
   const release = (key) => canvasRef.current?._virtualKey?.(key, false);
-
-  const btnProps = (key) => ({
+  const btn = (key) => ({
     onPointerDown:   (e) => { e.preventDefault(); press(key);   },
     onPointerUp:     (e) => { e.preventDefault(); release(key); },
     onPointerLeave:  (e) => { e.preventDefault(); release(key); },
     onPointerCancel: (e) => { e.preventDefault(); release(key); },
   });
 
-  // ── Pantallas ────────────────────────────────────────────────
   const startGame = () => {
-    setScore(0);
-    setLives(3);
-    setLevel(0);
-    setGameKey(k => k + 1); // fuerza re-mount del GameCanvas
+    setScore(0); setLives(3); setLevel(0);
+    setGameKey(k => k + 1);
     setScreen('ready');
   };
-
   const nextLevel = () => setScreen('playing');
+
+  const isBoss = LEVELS[level]?.isBossLevel;
 
   return (
     <div className="snow-wrapper">
-      {/* Header */}
+
+      {/* ── Top bar ── */}
       <div className="snow-topbar">
         <button className="snow-back-btn" onClick={onBack}>← VOLVER</button>
         <span className="snow-title-small">❄ SNOW BROS</span>
+        <HUD score={score} lives={lives} level={level} inline />
       </div>
 
-      {/* HUD */}
-      <HUD score={score} lives={lives} level={level} />
+      {/* ── Área de juego: canvas + controles lado a lado en landscape ── */}
+      <div className="snow-game-area">
 
-      {/* Canvas */}
-      <div className="snow-canvas-wrap" ref={(el) => {
-        if (el) canvasRef.current = el.querySelector('canvas');
-      }}>
-        <GameCanvas
-          key={gameKey}
-          levelIndex={level}
-          paused={screen !== 'playing'}
-          onScoreChange={setScore}
-          onLivesChange={setLives}
-          onLevelClear={handleLevelClear}
-          onGameOver={handleGameOver}
-        />
+        {/* Controles izquierda (D-pad) */}
+        <div className="snow-side-controls snow-left-pad">
+          <button className="snow-btn dpad-btn left-btn"  {...btn('left')}>◀</button>
+          <button className="snow-btn dpad-btn right-btn" {...btn('right')}>▶</button>
+        </div>
 
-        {screen === 'ready' && (() => {
-          const isBoss = LEVELS[level]?.isBossLevel;
-          return (
+        {/* Canvas */}
+        <div className="snow-canvas-wrap" ref={(el) => {
+          if (el) canvasRef.current = el.querySelector('canvas');
+        }}>
+          <GameCanvas
+            key={gameKey}
+            levelIndex={level}
+            paused={screen !== 'playing'}
+            onScoreChange={setScore}
+            onLivesChange={setLives}
+            onLevelClear={handleLevelClear}
+            onGameOver={handleGameOver}
+          />
+
+          {screen === 'ready' && (
             <div className="snow-overlay">
               <div className={`snow-overlay-box${isBoss ? ' boss-stage' : ''}`}>
                 {isBoss && <p className="snow-overlay-title gold">♛ BOSS STAGE ♛</p>}
@@ -88,43 +83,48 @@ export default function SnowBrosGame({ onBack }) {
                 <button className="snow-overlay-btn" onClick={nextLevel}>▶ READY!</button>
               </div>
             </div>
-          );
-        })()}
-
-        {screen === 'over' && (
-          <div className="snow-overlay">
-            <div className="snow-overlay-box">
-              <p className="snow-overlay-title red">GAME OVER</p>
-              <p className="snow-overlay-sub">Puntuación: {String(score).padStart(6,'0')}</p>
-              <button className="snow-overlay-btn" onClick={startGame}>↺ REINTENTAR</button>
-              <button className="snow-overlay-btn secondary" onClick={onBack}>← MENÚ</button>
+          )}
+          {screen === 'over' && (
+            <div className="snow-overlay">
+              <div className="snow-overlay-box">
+                <p className="snow-overlay-title red">GAME OVER</p>
+                <p className="snow-overlay-sub">Puntuación: {String(score).padStart(6,'0')}</p>
+                <button className="snow-overlay-btn" onClick={startGame}>↺ REINTENTAR</button>
+                <button className="snow-overlay-btn secondary" onClick={onBack}>← MENÚ</button>
+              </div>
             </div>
-          </div>
-        )}
-
-        {screen === 'win' && (
-          <div className="snow-overlay">
-            <div className="snow-overlay-box">
-              <p className="snow-overlay-title gold">¡GANASTE!</p>
-              <p className="snow-overlay-sub">Puntuación: {String(score).padStart(6,'0')}</p>
-              <button className="snow-overlay-btn" onClick={startGame}>↺ JUGAR DE NUEVO</button>
-              <button className="snow-overlay-btn secondary" onClick={onBack}>← MENÚ</button>
+          )}
+          {screen === 'win' && (
+            <div className="snow-overlay">
+              <div className="snow-overlay-box">
+                <p className="snow-overlay-title gold">¡GANASTE!</p>
+                <p className="snow-overlay-sub">Puntuación: {String(score).padStart(6,'0')}</p>
+                <button className="snow-overlay-btn" onClick={startGame}>↺ JUGAR DE NUEVO</button>
+                <button className="snow-overlay-btn secondary" onClick={onBack}>← MENÚ</button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
-
-      {/* Controles táctiles */}
-      <div className="snow-controls">
-        <div className="snow-dpad">
-          <button className="snow-btn dpad-left"  {...btnProps('left')}>◀</button>
-          <button className="snow-btn dpad-right" {...btnProps('right')}>▶</button>
+          )}
         </div>
-        <div className="snow-actions">
-          <button className="snow-btn action-jump"  {...btnProps('jump')}>▲<br/><small>SALTO</small></button>
-          <button className="snow-btn action-shoot" {...btnProps('shoot')}>❄<br/><small>NIEVE</small></button>
+
+        {/* Controles derecha (acción) */}
+        <div className="snow-side-controls snow-right-pad">
+          <button className="snow-btn action-btn jump-btn"  {...btn('jump')}>▲<span>SALTO</span></button>
+          <button className="snow-btn action-btn shoot-btn" {...btn('shoot')}>❄<span>NIEVE</span></button>
         </div>
       </div>
+
+      {/* ── Controles inferiores (portrait) ── */}
+      <div className="snow-bottom-controls">
+        <div className="snow-dpad-row">
+          <button className="snow-btn dpad-btn left-btn"  {...btn('left')}>◀</button>
+          <button className="snow-btn dpad-btn right-btn" {...btn('right')}>▶</button>
+        </div>
+        <div className="snow-action-row">
+          <button className="snow-btn action-btn jump-btn"  {...btn('jump')}>▲<span>SALTO</span></button>
+          <button className="snow-btn action-btn shoot-btn" {...btn('shoot')}>❄<span>NIEVE</span></button>
+        </div>
+      </div>
+
     </div>
   );
 }

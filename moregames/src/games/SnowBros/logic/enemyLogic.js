@@ -165,7 +165,8 @@ export function updateEnemies(enemies, platforms, _player, particles, now) {
     for (const target of enemies) {
       if (target === ball || target.state === 'dead') continue;
       if (overlaps(ball, target)) {
-        target.state = 'dead';
+        target.state   = 'dead';
+        target._killedByBall = true;
         spawnParticles(particles, target.x + target.w / 2, target.y + target.h / 2, '#a8d8ff', 10);
       }
     }
