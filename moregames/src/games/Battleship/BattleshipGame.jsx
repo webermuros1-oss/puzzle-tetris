@@ -310,7 +310,6 @@ export default function BattleshipGame({ onBack }) {
         <div
           className="bs-grid"
           ref={gridRef}
-          style={{ gridArea: 'grid' }}
         >
           {Array.from({ length: BOARD_SIZE }, (_, r) =>
             Array.from({ length: BOARD_SIZE }, (_, c) => {
