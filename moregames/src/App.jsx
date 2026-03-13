@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PuzzleGame     from './games/Puzzle/PuzzleGame';
 import BattleshipGame from './games/Battleship/BattleshipGame';
 import SnowBrosGame   from './games/SnowBros/SnowBrosGame';
+import TerciosGame    from './games/TerciosFlandesRunGun/TerciosGame';
 import appLogo        from './assets/logo app juegos.jpg';
 import './dashboard.css';
 
@@ -33,6 +34,15 @@ const GAMES = [
     bg: 'linear-gradient(135deg, #0a1628 0%, #0d2b45 50%, #0a1628 100%)',
     badge: 'NUEVO',
   },
+  {
+    id: 'tercios',
+    name: 'Tercios en Flandes',
+    tagline: 'Run & Gun — Siglo XVII',
+    emoji: '⚔️',
+    accent: '#ffd700',
+    bg: 'linear-gradient(135deg, #1a0f04 0%, #3a1f08 50%, #1a0f04 100%)',
+    badge: 'NUEVO',
+  },
 ];
 
 export default function App() {
@@ -41,6 +51,7 @@ export default function App() {
   if (current === 'puzzle')     return <PuzzleGame onBack={() => setCurrent(null)} />;
   if (current === 'battleship') return <BattleshipGame onBack={() => setCurrent(null)} />;
   if (current === 'snowbros')   return <SnowBrosGame onBack={() => setCurrent(null)} />;
+  if (current === 'tercios')    return <TerciosGame onBack={() => setCurrent(null)} />;
 
   return (
     <div className="dashboard">
