@@ -94,8 +94,11 @@ export function getPlayerFrame(player, tick) {
 
 export function getEnemyFrame(enemy) {
   if (enemy.state === 'snowball') {
-    return enemy.type === 'red' ? SPR.snowball.large : SPR.snowball.medium;
+    return enemy.type === 'red' ? SPR.snowball.large
+         : enemy.type === 'boss' || enemy.type === 'superboss' ? SPR.snowball.large
+         : SPR.snowball.medium;
   }
+  if (enemy.type === 'boss' || enemy.type === 'superboss') return SPR.blob.normal; // fallback, overridden in render
   const sheet = enemy.type === 'red' ? SPR.red : SPR.blob;
   return sheet[enemy.state] ?? sheet.normal;
 }
@@ -122,4 +125,18 @@ export function getBossFrame(enemy, tick) {
   // Ciclo de caminar/idle
   const cycle = [BOSS_SPR.walk1, BOSS_SPR.walk2, BOSS_SPR.walk3, BOSS_SPR.walk2];
   return cycle[Math.floor(tick / 10) % cycle.length];
+}
+
+// ── Superboss sprite (superBosh.png — imagen completa) ───────
+export const SUPERBOSS_SPR = {
+  idle:    { sx: 0, sy: 0, sw: 200, sh: 250 },
+  walk1:   { sx: 0, sy: 0, sw: 200, sh: 250 },
+  walk2:   { sx: 0, sy: 0, sw: 200, sh: 250 },
+  hit:     { sx: 0, sy: 0, sw: 200, sh: 250 },
+  attack:  { sx: 0, sy: 0, sw: 200, sh: 250 },
+};
+
+export function getSuperbossFrame(enemy, tick) {
+  if (enemy.state === 'snowed1' || enemy.state === 'snowed2') return SUPERBOSS_SPR.hit;
+  return SUPERBOSS_SPR.idle; // single frame for now
 }
