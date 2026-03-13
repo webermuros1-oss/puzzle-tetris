@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import GameCanvas from './GameCanvas.jsx';
 import HUD        from './HUD.jsx';
 import { LEVELS } from './logic/levelData.js';
+import { startMusic, stopMusic } from './logic/soundManager.js';
 import './styles/snowbros.css';
 
 export default function SnowBrosGame({ onBack }) {
@@ -14,9 +15,15 @@ export default function SnowBrosGame({ onBack }) {
 
   const handleLevelClear = useCallback(() => {
     const next = level + 1;
-    if (next >= LEVELS.length) setScreen('win');
-    else { setLevel(next); setScreen('ready'); }
+    if (next >= LEVELS.length) { stopMusic(); setScreen('win'); }
+    else { setLevel(next); } // screen stays 'playing', music continues
   }, [level]);
+
+  useEffect(() => {
+    if (screen === 'playing') startMusic();
+    else stopMusic();
+    return () => {};
+  }, [screen]);
 
   const handleGameOver = useCallback(() => setScreen('over'), []);
 

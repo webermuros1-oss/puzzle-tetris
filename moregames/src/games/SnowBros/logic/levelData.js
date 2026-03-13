@@ -238,7 +238,7 @@ export const LEVELS = [
       { x: 185, y: 110, w: 110, h: 16, type: 'ice'   },
     ],
     enemies: [
-      { type: 'boss', x: 195, y: 30 },
+      { type: 'superboss', x: 195, y: 30 },
     ],
   },
 

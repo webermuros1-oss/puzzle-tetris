@@ -348,24 +348,27 @@
     height: calc(100dvh - 44px);
     max-height: 420px;
   }
+  /* Pads laterales: botones en fila horizontal */
   .snow-side-controls {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    width: 70px;
+    flex-direction: row;   /* ◀ ▶ uno al lado del otro */
+    flex-wrap: nowrap;
+    gap: 8px;
+    width: auto;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
   }
   .snow-bottom-controls { display: none; }
 
   /* Botones algo más pequeños en landscape */
-  .dpad-btn  { width: 52px; height: 52px; font-size: 20px; }
-  .action-btn { width: 54px; height: 54px; font-size: 18px; }
+  .dpad-btn   { width: 50px; height: 50px; font-size: 20px; }
+  .action-btn { width: 52px; height: 52px; font-size: 18px; }
 }
 
 /* Landscape muy pequeño (teléfonos) */
 @media (orientation: landscape) and (max-height: 400px) {
   .snow-canvas { max-height: 340px; }
-  .dpad-btn   { width: 46px; height: 46px; font-size: 18px; }
-  .action-btn { width: 48px; height: 48px; font-size: 16px; }
+  .dpad-btn   { width: 44px; height: 44px; font-size: 17px; }
+  .action-btn { width: 46px; height: 46px; font-size: 16px; }
 }

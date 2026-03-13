@@ -17,16 +17,19 @@ export function createPlayer() {
     lastThrow: 0,
     animTick: 0,
     soundEvent: null, // 'jump' | 'shoot' — consumido por GameCanvas
+    speedBoostUntil: 0,
+    fireBoostUntil:  0,
   };
 }
 
 export function updatePlayer(player, keys, platforms, now) {
   // ── Horizontal ──
+  const spd = (now < player.speedBoostUntil) ? MOVE_SPEED * 1.65 : MOVE_SPEED;
   if (keys.left) {
-    player.vx  = -MOVE_SPEED;
+    player.vx  = -spd;
     player.dir = -1;
   } else if (keys.right) {
-    player.vx  = MOVE_SPEED;
+    player.vx  = spd;
     player.dir = 1;
   } else {
     player.vx = 0;
@@ -69,7 +72,8 @@ export function updatePlayer(player, keys, platforms, now) {
 
 // Crea un proyectil si el cooldown lo permite
 export function tryThrow(player, projectiles, now) {
-  if (now - player.lastThrow < THROW_CD) return;
+  const cd = (now < player.fireBoostUntil) ? 130 : THROW_CD;
+  if (now - player.lastThrow < cd) return;
   player.lastThrow  = now;
   player.anim       = 'throw';
   player.soundEvent = 'shoot';

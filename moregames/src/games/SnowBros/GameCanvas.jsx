@@ -1,17 +1,19 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { CANVAS_W, CANVAS_H, GROUND_Y, LEVELS } from './logic/levelData.js';
-import { SPR, getPlayerFrame, getEnemyFrame, getBossFrame } from './logic/sprites.js';
+import { SPR, getPlayerFrame, getEnemyFrame, getBossFrame, getSuperbossFrame } from './logic/sprites.js';
 import { createPlayer, updatePlayer, tryThrow } from './logic/playerLogic.js';
-import { createEnemy, hitEnemy, tryPushBall, updateEnemies, spawnParticles, tryBossShoot } from './logic/enemyLogic.js';
+import { createEnemy, hitEnemy, tryPushBall, updateEnemies, spawnParticles, tryBossShoot, trySuperbossLightning } from './logic/enemyLogic.js';
 import { overlaps, bounceProjectileWalls } from './logic/collisionLogic.js';
 import {
   playJump, playShoot, playEnemyHit, playSnowball,
   playBossHit, playPlayerDamage, playLevelClear, playDeath, playBossDeath,
+  playPowerup, playLightningWarning, playLightningStrike,
 } from './logic/soundManager.js';
 
 import spritesheetSrc from './img/tiletPersonages.png';
 import bgSrc          from './img/mundoSnow.png';
 import bossSrc        from './img/badLevel10.png';
+import superBoshSrc   from './img/superBosh.png';
 
 // ────────────────────────────────────────────────────────────────
 // GameCanvas: toda la lógica y renderizado del juego en <canvas>
@@ -21,7 +23,7 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
   const stateRef     = useRef(null);   // estado mutable del juego (no triggers re-render)
   const rafRef       = useRef(null);
   const keysRef      = useRef({ left: false, right: false, jump: false, shoot: false });
-  const imagesRef    = useRef({ sheet: null, bg: null, boss: null, loaded: 0 });
+  const imagesRef    = useRef({ sheet: null, bg: null, boss: null, superBoss: null, loaded: 0 });
   const pausedRef    = useRef(paused);
   pausedRef.current  = paused;
 
@@ -47,6 +49,8 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
       invincibleUntil: opts.invincibleUntil ?? 0,
       score:          opts.score  ?? stateRef.current?.score ?? 0,
       lives:          opts.lives  ?? stateRef.current?.lives ?? 3,
+      lightnings:     [],
+      powerups:       [],
     };
   }, []);
 
@@ -96,6 +100,10 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
     rawBoss.onload   = () => {
       imgs.boss = processSheet(rawBoss); // quita fondo blanco igual que el spritesheet
     };
+
+    const rawSB    = new Image();
+    rawSB.src      = superBoshSrc;
+    rawSB.onload   = () => { imgs.superBoss = processSheet(rawSB); };
   }, [onReady]);
 
   // ── Teclado ─────────────────────────────────────────────────
@@ -144,7 +152,7 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
       const gs = stateRef.current;
       if (!gs) return;
 
-      const { player, enemies, projectiles, bossProjectiles, particles, platforms } = gs;
+      const { player, enemies, projectiles, bossProjectiles, particles, platforms, lightnings: _lt, powerups: _pu } = gs;
       const now = timestamp;
       gs.tick++;
 
@@ -224,6 +232,36 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
         if (e.type === 'boss') tryBossShoot(e, player, bossProjectiles, now);
       }
 
+      // ── Superboss lightning ──
+      for (const e of enemies) {
+        if (e.type === 'superboss') trySuperbossLightning(e, gs.lightnings, now);
+      }
+
+      // ── Update lightnings ──
+      for (const lt of gs.lightnings) {
+        if (now > lt.strikeUntil) { lt.active = false; continue; }
+        if (now >= lt.warningUntil && !lt._warned) {
+          lt._warned = true;
+          playLightningStrike();
+        }
+        // Damage player during strike phase
+        if (now >= lt.warningUntil && !lt._dmgDealt) {
+          const strikeBox = { x: lt.x - lt.w/2, y: 0, w: lt.w + 8, h: GROUND_Y + 20 };
+          if (!gs.invincibleUntil || now > gs.invincibleUntil) {
+            if (overlaps(strikeBox, player)) {
+              lt._dmgDealt = true;
+              gs.lives--;
+              onLivesChange?.(gs.lives);
+              spawnParticles(particles, player.x + player.w/2, player.y, '#88aaff', 10);
+              playPlayerDamage();
+              if (gs.lives <= 0) { gs.phase = 'dead'; gs.phaseTimer = 2200; playDeath(); }
+              else initLevel(levelIndex, { score: gs.score, lives: gs.lives, invincibleUntil: now + 2000 });
+            }
+          }
+        }
+      }
+      gs.lightnings = gs.lightnings.filter(lt => lt.active);
+
       // ── Proyectiles del boss ──
       for (const bp of bossProjectiles) {
         if (!bp.active) continue;
@@ -255,10 +293,42 @@ export default function GameCanvas({ levelIndex, paused, onScoreChange, onLivesC
       // Puntuación por bola que elimina a otro
       const justDied = enemies.filter(e => e.state === 'dead' && !e._scored);
       if (justDied.length) {
-        gs.score += justDied.reduce((sum, e) => sum + (e.type === 'boss' ? 2000 : 100), 0);
+        gs.score += justDied.reduce((sum, e) => sum + (e.type === 'boss' || e.type === 'superboss' ? 2000 : 100), 0);
         justDied.forEach(e => { e._scored = true; });
         onScoreChange?.(gs.score);
+        // Spawn power-ups randomly when enemies die
+        for (const e of justDied) {
+          if (Math.random() < 0.18) {
+            const types = ['speed', 'firerate', 'life'];
+            gs.powerups.push({
+              type: types[Math.floor(Math.random() * types.length)],
+              x: e.x + e.w/2 - 10,
+              y: e.y,
+              w: 22, h: 22,
+              vy: -3,
+              active: true,
+            });
+          }
+        }
       }
+
+      // ── Update power-ups ──
+      for (const pu of gs.powerups) {
+        if (!pu.active) continue;
+        pu.vy += 0.35;
+        pu.y  += pu.vy;
+        if (pu.y + pu.h >= GROUND_Y) { pu.y = GROUND_Y - pu.h; pu.vy = 0; }
+        if (overlaps(pu, player)) {
+          pu.active = false;
+          if (pu.type === 'speed')    { player.speedBoostUntil = now + 6000; }
+          if (pu.type === 'firerate') { player.fireBoostUntil  = now + 6000; }
+          if (pu.type === 'life')     { gs.lives = Math.min(gs.lives + 1, 9); onLivesChange?.(gs.lives); }
+          playPowerup();
+          gs.score += 300; onScoreChange?.(gs.score);
+          spawnParticles(particles, pu.x + pu.w/2, pu.y + pu.h/2, '#ffd700', 12);
+        }
+      }
+      gs.powerups = gs.powerups.filter(p => p.active);
 
       // ── Colisión jugador-enemigo (con invencibilidad temporal tras daño) ──
       if (!gs.invincibleUntil || now > gs.invincibleUntil) {
@@ -333,7 +403,7 @@ GameCanvas.triggerKey = (canvas, key, pressed) => {
 // RENDER
 // ════════════════════════════════════════════════════════════════
 function render(ctx, gs, imgs, timestamp) {
-  const { player, enemies, projectiles, bossProjectiles, particles, platforms, bgColor, bgStrip, tileRow, phase } = gs;
+  const { player, enemies, projectiles, bossProjectiles, particles, platforms, bgColor, bgStrip, tileRow, phase, lightnings, powerups } = gs;
   const { sheet, bg, boss: bossImg } = imgs;
 
   ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
@@ -372,22 +442,43 @@ function render(ctx, gs, imgs, timestamp) {
   }
   ctx.globalAlpha = 1;
 
-  // ── Proyectiles (siempre visibles: sprite + fallback) ──
-  for (const proj of projectiles) {
-    if (!proj.active) continue;
-    if (sheet) {
-      drawSprite(ctx, sheet, SPR.projectile, proj.x, proj.y, proj.w, proj.h);
-    } else {
-      // Fallback: bola azul brillante
+  // ── Power-ups ──
+  if (powerups) {
+    for (const pu of powerups) {
+      if (!pu.active) continue;
       ctx.save();
-      ctx.shadowColor = '#7dd3fc';
-      ctx.shadowBlur  = 8;
-      ctx.fillStyle   = '#bfefff';
-      ctx.beginPath();
-      ctx.arc(proj.x + proj.w / 2, proj.y + proj.h / 2, proj.w / 2, 0, Math.PI * 2);
-      ctx.fill();
+      const pulse = 0.7 + 0.3 * Math.sin(timestamp / 180);
+      ctx.globalAlpha = pulse;
+      const cx = pu.x + pu.w/2, cy = pu.y + pu.h/2;
+      const colors = { speed: '#fde047', firerate: '#7dd3fc', life: '#f87171' };
+      const icons  = { speed: '⚡', firerate: '❄', life: '♥' };
+      ctx.shadowColor = colors[pu.type] ?? '#fff';
+      ctx.shadowBlur  = 12;
+      ctx.fillStyle   = colors[pu.type] ?? '#fff';
+      ctx.fillRect(pu.x, pu.y, pu.w, pu.h);
+      ctx.globalAlpha = 1;
+      ctx.font = '13px serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(icons[pu.type] ?? '★', cx, cy);
       ctx.restore();
     }
+  }
+
+  // ── Proyectiles (bolas de nieve — siempre círculos) ──
+  for (const proj of projectiles) {
+    if (!proj.active) continue;
+    const cx = proj.x + proj.w/2, cy = proj.y + proj.h/2;
+    const r  = proj.w/2;
+    ctx.save();
+    ctx.shadowColor = '#bfefff'; ctx.shadowBlur = 8;
+    const g = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.05, cx, cy, r);
+    g.addColorStop(0, '#ffffff');
+    g.addColorStop(0.5, '#d0f0ff');
+    g.addColorStop(1, '#7dd3fc');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
   }
 
   // ── Proyectiles del boss (bolas de hielo azul oscuro) ──
@@ -411,22 +502,41 @@ function render(ctx, gs, imgs, timestamp) {
   // ── Enemigos ──
   for (const e of enemies) {
     if (e.state === 'dead') continue;
-    const frame = getEnemyFrame(e);
-    const flip  = e.vx < 0 || e.ballVx < 0;
-    const isBoss = e.type === 'boss';
+    const frame      = getEnemyFrame(e);
+    const flip       = e.vx < 0 || e.ballVx < 0;
+    const isBoss     = e.type === 'boss';
+    const isSuperboss = e.type === 'superboss';
 
-    // Glow: dorado pulsante para boss, azul para snowball
-    if (isBoss) {
+    // Glow: dorado pulsante para boss/superboss, azul para snowball
+    if (isBoss || isSuperboss) {
       const pulse = 0.5 + 0.5 * Math.sin(timestamp / 200);
-      ctx.shadowColor = e.state === 'snowball' ? '#a8d8ff' : `hsl(45,100%,${50 + pulse * 20}%)`;
-      ctx.shadowBlur  = isBoss ? 18 : 8;
+      ctx.shadowColor = e.state === 'snowball' ? '#a8d8ff' : `hsl(${isSuperboss ? 280 : 45},100%,${50 + pulse * 20}%)`;
+      ctx.shadowBlur  = 18;
     } else if (e.state === 'snowball') {
       ctx.shadowColor = '#a8d8ff';
       ctx.shadowBlur  = 8;
     }
 
-    if (isBoss && e.state !== 'snowball' && bossImg) {
-      // Recortar frame exacto del sprite sheet del boss
+    if (e.state === 'snowball') {
+      const cx = e.x + e.w/2, cy = e.y + e.h/2;
+      const r = e.w / 2;
+      ctx.save();
+      ctx.shadowColor = '#a8d8ff';
+      ctx.shadowBlur  = 10;
+      const grad = ctx.createRadialGradient(cx - r*0.3, cy - r*0.3, r*0.1, cx, cy, r);
+      grad.addColorStop(0, '#ffffff');
+      grad.addColorStop(0.6, '#c8e8ff');
+      grad.addColorStop(1, '#7dd3fc');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+      // Snow texture dots
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.beginPath(); ctx.arc(cx - r*0.3, cy - r*0.3, r*0.15, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx + r*0.2, cy - r*0.1, r*0.12, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    } else if (isBoss && bossImg) {
       const bf = getBossFrame(e, gs.tick);
       try {
         if (flip) {
@@ -438,12 +548,21 @@ function render(ctx, gs, imgs, timestamp) {
           ctx.drawImage(bossImg, bf.sx, bf.sy, bf.sw, bf.sh, e.x, e.y, e.w, e.h);
         }
       } catch(_) {}
+    } else if (isSuperboss && imgs.superBoss) {
+      const sf = getSuperbossFrame(e, gs.tick);
+      try {
+        ctx.save();
+        if (flip) { ctx.scale(-1,1); ctx.drawImage(imgs.superBoss, sf.sx, sf.sy, sf.sw || imgs.superBoss.width, sf.sh || imgs.superBoss.height, -e.x-e.w, e.y, e.w, e.h); }
+        else { ctx.drawImage(imgs.superBoss, sf.sx, sf.sy, sf.sw || imgs.superBoss.width, sf.sh || imgs.superBoss.height, e.x, e.y, e.w, e.h); }
+        ctx.restore();
+      } catch(_) {}
     } else {
+      // normal sprite draw
       drawSpriteFlip(ctx, sheet, frame, e.x, e.y, e.w, e.h, flip);
     }
     ctx.shadowBlur = 0;
 
-    // Corona ♛ sobre el boss
+    // Corona ♛ sobre el boss (no sobre superboss — ya tiene su sprite)
     if (isBoss && e.state !== 'snowball') {
       ctx.font      = '14px serif';
       ctx.textAlign = 'center';
@@ -454,18 +573,56 @@ function render(ctx, gs, imgs, timestamp) {
     // Barra de vida
     if (e.state === 'snowed1' || e.state === 'snowed2') {
       const pct    = e.hits / e.maxHits;
-      const barH   = isBoss ? 6 : 4;
-      const barY   = e.y - (isBoss ? 10 : 6);
-      ctx.fillStyle = isBoss ? '#6b0000' : '#1a6fb5';
+      const isBig  = isBoss || isSuperboss;
+      const barH   = isBig ? 6 : 4;
+      const barY   = e.y - (isBig ? 10 : 6);
+      ctx.fillStyle = isBig ? '#6b0000' : '#1a6fb5';
       ctx.fillRect(e.x, barY, e.w, barH);
-      ctx.fillStyle = isBoss ? '#ff4400' : '#7dd3fc';
+      ctx.fillStyle = isBig ? '#ff4400' : '#7dd3fc';
       ctx.fillRect(e.x, barY, e.w * pct, barH);
-    } else if (isBoss && e.state === 'normal') {
-      // Boss siempre muestra barra de vida
+    } else if ((isBoss || isSuperboss) && e.state === 'normal') {
+      // Boss/superboss siempre muestra barra de vida
       ctx.fillStyle = '#6b0000';
       ctx.fillRect(e.x, e.y - 10, e.w, 6);
       ctx.fillStyle = '#ff4400';
       ctx.fillRect(e.x, e.y - 10, e.w, 6); // full cuando está normal
+    }
+  }
+
+  // ── Lightnings ──
+  if (lightnings) {
+    for (const lt of lightnings) {
+      if (!lt.active) continue;
+      const isStrike = timestamp >= lt.warningUntil;
+      const cx = lt.x;
+      if (!isStrike) {
+        // Warning: pulsing red/yellow circle on ground
+        const pulse = 0.4 + 0.6 * Math.sin(timestamp / 60);
+        ctx.save();
+        ctx.globalAlpha = pulse;
+        ctx.shadowColor = '#ff4400'; ctx.shadowBlur = 16;
+        ctx.fillStyle   = '#ffaa00';
+        ctx.beginPath(); ctx.arc(cx, GROUND_Y - 4, 10, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      } else {
+        // Strike: blue-white vertical beam
+        const prog = (timestamp - lt.warningUntil) / (lt.strikeUntil - lt.warningUntil);
+        const alpha = prog < 0.5 ? 1 : 1 - (prog - 0.5) * 2;
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.shadowColor = '#00aaff'; ctx.shadowBlur = 20;
+        const beamGrad = ctx.createLinearGradient(cx, 0, cx + 4, 0);
+        beamGrad.addColorStop(0, 'rgba(150,200,255,0.8)');
+        beamGrad.addColorStop(0.5, 'rgba(255,255,255,1)');
+        beamGrad.addColorStop(1, 'rgba(100,180,255,0.8)');
+        ctx.fillStyle = beamGrad;
+        ctx.fillRect(cx - lt.w/2, 0, lt.w, GROUND_Y);
+        // Impact at ground
+        ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 30;
+        ctx.fillStyle = '#aaddff';
+        ctx.beginPath(); ctx.arc(cx, GROUND_Y, 18, Math.PI, 0); ctx.fill();
+        ctx.restore();
+      }
     }
   }
 

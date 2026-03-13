@@ -1,13 +1,15 @@
 import { landOnPlatforms, overlaps } from './collisionLogic.js';
 import { CANVAS_W } from './levelData.js';
 
-const GRAVITY      = 0.52;
-const BLOB_SPEED   = 0.75;   // reducido
-const RED_SPEED    = 1.2;    // reducido
-const BOSS_SPEED   = 1.6;    // reducido
-const BALL_SPEED   = 5;
-const BOSS_RECOVER = 3500;
-const RECOVER_TIME = 6000;
+const GRAVITY        = 0.52;
+const BLOB_SPEED     = 0.75;   // reducido
+const RED_SPEED      = 1.2;    // reducido
+const BOSS_SPEED     = 1.6;    // reducido
+const SUPERBOSS_SPEED = 1.4;
+const BALL_SPEED     = 5;
+const BOSS_RECOVER   = 3500;
+const BOSS_RECOVER_SB = 2000;
+const RECOVER_TIME   = 6000;
 
 const JUMP_CHANCE_BLOB = 0.007;
 const JUMP_CHANCE_RED  = 0.011;
@@ -16,26 +18,29 @@ const JUMP_FORCE       = -10.5;
 
 const BOSS_SHOOT_CD = 2800;  // ms entre disparos del boss
 
-const MAX_HITS = { blob: 1, red: 2, boss: 8 };
+const MAX_HITS = { blob: 1, red: 2, boss: 8, superboss: 20 };
 
 export function createEnemy(def, id) {
-  const isBoss = def.type === 'boss';
-  const isRed  = def.type === 'red';
+  const isBoss      = def.type === 'boss';
+  const isSuperboss = def.type === 'superboss';
+  const isRed       = def.type === 'red';
+  const spd = isBoss ? BOSS_SPEED : isSuperboss ? SUPERBOSS_SPEED : isRed ? RED_SPEED : BLOB_SPEED;
   return {
     id,
     type:      def.type,
     x: def.x,  y: def.y,
-    w: isBoss ? 82 : isRed ? 30 : 26,
-    h: isBoss ? 100 : isRed ? 38 : 26,
-    vx: (isBoss ? BOSS_SPEED : isRed ? RED_SPEED : BLOB_SPEED) * (Math.random() < 0.5 ? 1 : -1),
+    w: isBoss ? 82 : isSuperboss ? 110 : isRed ? 30 : 26,
+    h: isBoss ? 100 : isSuperboss ? 130 : isRed ? 38 : 26,
+    vx: spd * (Math.random() < 0.5 ? 1 : -1),
     vy: 0,
-    onGround:  false,
-    state:     'normal',
-    hits:      0,
-    maxHits:   MAX_HITS[def.type] ?? 2,
-    ballVx:    0,
-    recoverAt: 0,
-    lastShot:  0,
+    onGround:    false,
+    state:       'normal',
+    hits:        0,
+    maxHits:     MAX_HITS[def.type] ?? 2,
+    ballVx:      0,
+    recoverAt:   0,
+    lastShot:    0,
+    lastLightning: 0,
   };
 }
 
@@ -48,7 +53,10 @@ export function hitEnemy(enemy, now) {
     enemy.state     = 'snowball';
     enemy.vx        = 0;
     enemy.ballVx    = 0;
-    enemy.recoverAt = now + (enemy.type === 'boss' ? BOSS_RECOVER : RECOVER_TIME);
+    const recTime = enemy.type === 'boss' ? BOSS_RECOVER
+                  : enemy.type === 'superboss' ? BOSS_RECOVER_SB
+                  : RECOVER_TIME;
+    enemy.recoverAt = now + recTime;
   } else {
     const frac = enemy.hits / enemy.maxHits;
     enemy.state = frac < 0.5 ? 'snowed1' : 'snowed2';
@@ -129,14 +137,18 @@ export function updateEnemies(enemies, platforms, _player, particles, now) {
         e.state   = 'normal';
         e.hits    = 0;
         e.ballVx  = 0;
-        const spd = e.type === 'boss' ? BOSS_SPEED : e.type === 'red' ? RED_SPEED : BLOB_SPEED;
+        const spd = e.type === 'boss' ? BOSS_SPEED
+                  : e.type === 'superboss' ? SUPERBOSS_SPEED
+                  : e.type === 'red' ? RED_SPEED : BLOB_SPEED;
         e.vx = spd * (Math.random() < 0.5 ? 1 : -1);
       }
       continue;
     }
 
     // ── Movimiento normal / snowed ──
-    const baseSpeed = e.type === 'boss' ? BOSS_SPEED : e.type === 'red' ? RED_SPEED : BLOB_SPEED;
+    const baseSpeed = e.type === 'boss' ? BOSS_SPEED
+                    : e.type === 'superboss' ? SUPERBOSS_SPEED
+                    : e.type === 'red' ? RED_SPEED : BLOB_SPEED;
     const speed     = e.state === 'normal' ? baseSpeed : baseSpeed * 0.35;
     e.x += e.vx > 0 ? speed : -speed;
 
@@ -170,6 +182,26 @@ export function updateEnemies(enemies, platforms, _player, particles, now) {
         spawnParticles(particles, target.x + target.w / 2, target.y + target.h / 2, '#a8d8ff', 10);
       }
     }
+  }
+}
+
+export function trySuperbossLightning(boss, lightnings, now) {
+  if (boss.state !== 'normal' && boss.state !== 'snowed1' && boss.state !== 'snowed2') return;
+  if (now - boss.lastLightning < 2200) return;
+  boss.lastLightning = now;
+
+  const count = 1 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < count; i++) {
+    const x = 40 + Math.random() * 400;
+    lightnings.push({
+      x,
+      w: 14,
+      warningUntil: now + 700,
+      strikeUntil:  now + 1050,
+      active: true,
+      _dmgDealt: false,
+      _warned:   false,
+    });
   }
 }
 
