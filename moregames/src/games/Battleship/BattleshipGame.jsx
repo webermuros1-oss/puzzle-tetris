@@ -51,33 +51,28 @@ const Missile = ({ missile }) => {
 // ── Ship art renderer ──────────────────────────────────────────────────────
 const ShipArt = ({ ship, row, col, horiz, cellSize, sunk, hit }) => {
   const size = ship.size;
-  // Container dimensions: full span with 2px margin each side
-  const w    = horiz ? cellSize * size - 4 : cellSize - 4;
-  const h    = horiz ? cellSize - 4        : cellSize * size - 4;
-  const left = col * cellSize + 2;
-  const top  = row * cellSize + 2;
+  // Exact cell span — no margins so image fills all cells
+  const w    = horiz ? cellSize * size : cellSize;
+  const h    = horiz ? cellSize        : cellSize * size;
+  const left = col * cellSize;
+  const top  = row * cellSize;
 
   const imgs = SHIP_IMGS[ship.id] || SHIP_IMGS.frigate;
-  const isOnFire = hit && !sunk && imgs.fire;
-  const src = isOnFire ? imgs.fire : (horiz ? imgs.horiz : imgs.vert);
-
-  const imgStyle = {
-    width: '100%',
-    height: '100%',
-    objectFit: 'contain',
-    filter: sunk ? 'grayscale(1) brightness(0.35)' : undefined,
-  };
+  // Fire variant only for horizontal — vertical ships keep their vertical image
+  const useFireImg = hit && !sunk && horiz && imgs.fire;
+  const src = useFireImg ? imgs.fire : (horiz ? imgs.horiz : imgs.vert);
 
   return (
     <div
       className={`bs-ship-art${sunk ? ' bs-ship-art--sunk' : ''}`}
-      style={{ left, top, width: w, height: h, overflow: 'hidden' }}
+      style={{ left, top, width: w, height: h }}
     >
-      <img src={src} alt={ship.name} draggable={false} style={imgStyle} />
-      {hit && !sunk && !imgs.fire && (
-        <img src={imgFire} alt="fire" className="bs-ship-fire-img" />
-      )}
-      {sunk && <div className="bs-ship-sunk-x">✕</div>}
+      <img
+        src={src}
+        alt={ship.name}
+        draggable={false}
+        style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+      />
     </div>
   );
 };

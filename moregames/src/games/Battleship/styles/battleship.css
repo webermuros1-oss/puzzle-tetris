@@ -234,12 +234,12 @@
   position: absolute;
   z-index: 5;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
+  overflow: hidden;
 }
-.bs-ship-art--sunk { opacity: 0.5; }
+.bs-ship-art--sunk {
+  opacity: 0.45;
+  filter: grayscale(0.7) brightness(0.7);
+}
 
 /* Fire image overlay for ships without dedicated fire variant */
 .bs-ship-fire-img {
