@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PuzzleGame     from './games/Puzzle/PuzzleGame';
 import BattleshipGame from './games/Battleship/BattleshipGame';
 import SnowBrosGame   from './games/SnowBros/SnowBrosGame';
+import appLogo        from './assets/logo app juegos.jpg';
 import './dashboard.css';
 
 const GAMES = [
@@ -44,7 +45,7 @@ export default function App() {
   return (
     <div className="dashboard">
       <header className="dash-header">
-        <div className="dash-logo">🎮 More Games</div>
+        <img src={appLogo} className="dash-logo-img" alt="More Games" />
         <p className="dash-sub">Elige tu aventura</p>
       </header>
 

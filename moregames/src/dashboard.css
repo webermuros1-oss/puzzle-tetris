@@ -19,12 +19,12 @@
 /* ── Header ──────────────────────────────────────── */
 .dash-header { text-align: center; }
 
-.dash-logo {
-  font-size: clamp(2rem, 7vw, 3.2rem);
-  font-weight: 900;
-  letter-spacing: -1.5px;
-  color: #f1f5f9;
-  text-shadow: 0 0 30px rgba(255,255,255,0.1);
+.dash-logo-img {
+  height: clamp(60px, 14vw, 110px);
+  width: auto;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
 }
 
 .dash-sub {

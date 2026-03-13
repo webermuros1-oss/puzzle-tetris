@@ -549,11 +549,10 @@ function render(ctx, gs, imgs, timestamp) {
         }
       } catch(_) {}
     } else if (isSuperboss && imgs.superBoss) {
-      const sf = getSuperbossFrame(e, gs.tick);
       try {
         ctx.save();
-        if (flip) { ctx.scale(-1,1); ctx.drawImage(imgs.superBoss, sf.sx, sf.sy, sf.sw || imgs.superBoss.width, sf.sh || imgs.superBoss.height, -e.x-e.w, e.y, e.w, e.h); }
-        else { ctx.drawImage(imgs.superBoss, sf.sx, sf.sy, sf.sw || imgs.superBoss.width, sf.sh || imgs.superBoss.height, e.x, e.y, e.w, e.h); }
+        if (flip) { ctx.scale(-1,1); ctx.drawImage(imgs.superBoss, 0, 0, imgs.superBoss.width, imgs.superBoss.height, -e.x-e.w, e.y, e.w, e.h); }
+        else { ctx.drawImage(imgs.superBoss, 0, 0, imgs.superBoss.width, imgs.superBoss.height, e.x, e.y, e.w, e.h); }
         ctx.restore();
       } catch(_) {}
     } else {
