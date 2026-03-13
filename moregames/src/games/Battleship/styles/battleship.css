@@ -137,11 +137,24 @@
     inset 0 0 40px rgba(14,80,140,0.3);
 }
 
+/* Ocean tile background layer */
+.bs-ocean-bg {
+  position: absolute;
+  inset: 0;
+  background-size: calc(100% / 10) calc(100% / 10);
+  background-repeat: repeat;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: 2px;
+}
+
 /* ── Individual cell ────────────────────────────────────────────── */
 .bs-cell {
   border: 1px solid rgba(56,189,248,0.15);
-  background: rgba(10,55,110,0.5);
+  background: transparent;
   position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -168,49 +181,20 @@
   border-color: rgba(239,68,68,0.6) !important;
 }
 
-/* ── Hit marker — red X ─────────────────────────────────────────── */
-.bs-hit-marker {
+/* ── Hit / Miss image markers ───────────────────────────────────── */
+.bs-marker-img {
   position: absolute;
-  inset: 15%;
-  background:
-    linear-gradient(45deg,  transparent 40%, #ef4444 40%, #ef4444 60%, transparent 60%),
-    linear-gradient(-45deg, transparent 40%, #ef4444 40%, #ef4444 60%, transparent 60%);
-  border-radius: 2px;
-  filter: drop-shadow(0 0 5px #ef4444);
-  animation: hitPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  object-fit: contain;
+  pointer-events: none;
+  z-index: 10;
+  animation: markerPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
 }
-.bs-cell--hit { background: rgba(239,68,68,0.18); }
-
-@keyframes hitPop {
-  from { transform: scale(0) rotate(-20deg); opacity: 0; }
+@keyframes markerPop {
+  from { transform: scale(0) rotate(-15deg); opacity: 0; }
   to   { transform: scale(1) rotate(0deg);   opacity: 1; }
 }
-
-/* ── Miss marker — blue water splash ───────────────────────────── */
-.bs-miss-marker {
-  position: absolute;
-  inset: 25%;
-  border: 2px solid #38bdf8;
-  border-radius: 50%;
-  opacity: 0.8;
-  animation: missPop 0.4s ease both;
-}
-.bs-miss-marker::after {
-  content: '·';
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  color: #7dd3fc;
-  font-size: 1.1em;
-  line-height: 1;
-}
-.bs-cell--miss { background: rgba(56,189,248,0.1); }
-
-@keyframes missPop {
-  0%   { transform: scale(0); opacity: 1; }
-  60%  { transform: scale(1.3); opacity: 0.9; }
-  100% { transform: scale(1); opacity: 0.8; }
-}
+.bs-cell--hit  { background: rgba(239,68,68,0.15); }
+.bs-cell--miss { background: rgba(56,189,248,0.08); }
 
 /* ── Sunk cells ─────────────────────────────────────────────────── */
 .bs-cell--sunk { background: rgba(51,65,85,0.5); }
@@ -242,42 +226,25 @@
   100% { transform: scale(2.2); opacity: 0; }
 }
 
-/* ── Ship art ───────────────────────────────────────────────────── */
+/* ── Ship art (image-based) ─────────────────────────────────────── */
 .bs-ship-art {
   position: absolute;
   z-index: 5;
   pointer-events: none;
-  border-radius: 3px 14px 14px 3px;
-  background:
-    radial-gradient(ellipse at 25% 30%, rgba(255,255,255,0.28) 0%, transparent 55%),
-    linear-gradient(160deg,
-      color-mix(in srgb, var(--ship-color) 60%, #cbd5e1) 0%,
-      var(--ship-color) 45%,
-      color-mix(in srgb, var(--ship-color) 60%, #0f172a) 100%);
-  box-shadow:
-    0 2px 8px rgba(0,0,0,0.7),
-    inset 0 1px 2px rgba(255,255,255,0.2),
-    0 0 14px color-mix(in srgb, var(--ship-color) 35%, transparent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: visible;
+  overflow: hidden;
+}
+.bs-ship-art--sunk {
+  opacity: 0.45;
+  filter: grayscale(0.7) brightness(0.7);
 }
 
-.bs-ship-tower {
+/* Fire image overlay for ships without dedicated fire variant */
+.bs-ship-fire-img {
   position: absolute;
-  top: 10%; left: 18%;
-  width: 28%; height: 55%;
-  background: color-mix(in srgb, var(--ship-color) 55%, #cbd5e1);
-  border-radius: 2px 3px 2px 2px;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.25);
-}
-
-.bs-ship-fire {
-  position: absolute;
-  top: -18px; left: 30%;
-  font-size: 18px;
-  animation: fireFlicker 0.4s ease-in-out infinite alternate;
+  top: -16px; left: 25%;
+  width: 28px; height: 28px;
+  object-fit: contain;
+  animation: fireFlicker 0.35s ease-in-out infinite alternate;
   z-index: 10;
 }
 @keyframes fireFlicker {
@@ -285,20 +252,21 @@
   to   { transform: scale(1.2) translateY(-3px); }
 }
 
-.bs-ship-art--sunk {
-  filter: grayscale(0.8) brightness(0.45);
-  background: linear-gradient(160deg, #374151 0%, #1f2937 100%);
-}
 .bs-ship-sunk-x {
+  position: absolute;
   font-size: 1.3rem;
   font-weight: 900;
   color: #ef4444;
   text-shadow: 0 0 8px #ef4444;
 }
 
-.bs-ship-art--carrier   { border-radius: 2px 20px 20px 2px; }
-.bs-ship-art--submarine { border-radius: 50px; }
-.bs-ship-art--patrol    { border-radius: 2px 30px 30px 2px; }
+/* Queue ship image in placement sidebar */
+.bs-queue-ship-img {
+  width: 40px;
+  height: 24px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+}
 
 /* ── Missile ────────────────────────────────────────────────────── */
 .bs-missile {
@@ -449,32 +417,14 @@
 
 /* ── Radar ──────────────────────────────────────────────────────── */
 .bs-radar { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.bs-radar-inner {
-  width: 56px; height: 56px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #0d3b2c 0%, #05150e 100%);
-  border: 2px solid rgba(34,197,94,0.4);
-  box-shadow: 0 0 16px rgba(34,197,94,0.25), inset 0 0 8px rgba(34,197,94,0.12);
-  position: relative;
-  overflow: hidden;
-}
-.bs-radar-sweep {
-  position: absolute; inset: 0;
-  background: conic-gradient(
-    rgba(34,197,94,0.55) 0deg,
-    rgba(34,197,94,0.0) 65deg,
-    transparent 65deg
-  );
-  animation: radarSpin 2.5s linear infinite;
-  border-radius: 50%;
+.bs-radar-img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  animation: radarSpin 3s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(34,197,94,0.6));
 }
 @keyframes radarSpin { to { transform: rotate(360deg); } }
-.bs-radar-inner::before {
-  content: '';
-  position: absolute; inset: 0;
-  border-radius: 50%;
-  border: 1px solid rgba(34,197,94,0.18);
-}
 .bs-radar-label { font-size: 0.52rem; font-weight: 800; letter-spacing: 2px; color: #4ade80; }
 
 /* ── Ship inventory ─────────────────────────────────────────────── */
@@ -495,7 +445,12 @@
   padding: 3px 7px;
 }
 .bs-inv-ship--sunk { opacity: 0.3; }
-.bs-inv-emoji { font-size: 1rem; }
+.bs-inv-ship-img {
+  height: 28px;
+  width: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.5));
+}
 .bs-inv-bar-wrap {
   width: 40px; height: 5px;
   background: rgba(255,255,255,0.12);

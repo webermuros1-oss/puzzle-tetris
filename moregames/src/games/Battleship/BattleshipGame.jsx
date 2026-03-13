@@ -6,13 +6,38 @@ import {
 } from './logic/battleshipLogic';
 import './styles/battleship.css';
 
-// ── Missile component ─────────────────────────────────────────────────────
+// ── Image assets ───────────────────────────────────────────────────────────
+import imgPortaviones        from '../img/portaviones-removebg-preview.png';
+import imgPortavionesFire    from '../img/portavionesFire-removebg-preview.png';
+import imgPortavionesVertical from '../img/portavionesVertical-removebg-preview.png';
+import imgBuque              from '../img/buque-removebg-preview.png';
+import imgBuqueFuego         from '../img/buqueFuego-removebg-preview.png';
+import imgDestructorVertical from '../img/destructorVertical-removebg-preview.png';
+import imgFragata            from '../img/fragata-removebg-preview.png';
+import imgFragataVertical    from '../img/fragataVertical-removebg-preview.png';
+import imgSubmarino          from '../img/submarino-removebg-preview.png';
+import imgSubmarinoVertical  from '../img/submarinoVertical-removebg-preview.png';
+import imgHit              from '../img/hit-removebg-preview.png';
+import imgSplash           from '../img/splashIndicator-removebg-preview.png';
+import imgRadar            from '../img/radar-removebg-preview.png';
+import imgOcean            from '../img/tileOcean.png';
+import imgFire             from '../img/iconFire-removebg-preview.png';
+
+// Ship image map: horiz / vert / fire state
+const SHIP_IMGS = {
+  carrier:    { horiz: imgPortaviones, vert: imgPortavionesVertical, fire: imgPortavionesFire },
+  battleship: { horiz: imgBuque,       vert: imgDestructorVertical,  fire: imgBuqueFuego },
+  submarine:  { horiz: imgSubmarino,   vert: imgSubmarinoVertical,   fire: null },
+  frigate:    { horiz: imgFragata,     vert: imgFragataVertical,     fire: null },
+  patrol:     { horiz: imgFragata,     vert: imgFragataVertical,     fire: null },
+};
+
+// ── Missile component ──────────────────────────────────────────────────────
 const Missile = ({ missile }) => {
   if (!missile) return null;
   return (
     <div
       className="bs-missile"
-      key={missile.id}
       style={{
         left: missile.fx,
         top:  missile.fy,
@@ -23,84 +48,80 @@ const Missile = ({ missile }) => {
   );
 };
 
-// ── Ship art renderer ─────────────────────────────────────────────────────
-// Draws a ship spanning multiple grid cells as an absolutely-positioned element.
-// parent grid must have position:relative and known cell size.
+// ── Ship art renderer ──────────────────────────────────────────────────────
 const ShipArt = ({ ship, row, col, horiz, cellSize, sunk, hit }) => {
-  const size  = ship.size;
-  const w     = horiz ? cellSize * size - 4 : cellSize - 6;
-  const h     = horiz ? cellSize - 6        : cellSize * size - 4;
-  const left  = col * cellSize + 3;
-  const top   = row * cellSize + 3;
+  const size = ship.size;
+  // Exact cell span — no margins so image fills all cells
+  const w    = horiz ? cellSize * size : cellSize;
+  const h    = horiz ? cellSize        : cellSize * size;
+  const left = col * cellSize;
+  const top  = row * cellSize;
+
+  const imgs = SHIP_IMGS[ship.id] || SHIP_IMGS.frigate;
+  // Fire variant only for horizontal — vertical ships keep their vertical image
+  const useFireImg = hit && !sunk && horiz && imgs.fire;
+  const src = useFireImg ? imgs.fire : (horiz ? imgs.horiz : imgs.vert);
 
   return (
     <div
-      className={`bs-ship-art bs-ship-art--${ship.id}${sunk ? ' bs-ship-art--sunk' : ''}`}
-      style={{
-        left, top, width: w, height: h,
-        '--ship-color': ship.color,
-        '--ship-w': `${w}px`,
-        '--ship-h': `${h}px`,
-      }}
+      className={`bs-ship-art${sunk ? ' bs-ship-art--sunk' : ''}`}
+      style={{ left, top, width: w, height: h }}
     >
-      {/* Conning tower / superstructure */}
-      <div className="bs-ship-tower" />
-      {/* Fire on hit ships */}
-      {hit && !sunk && <div className="bs-ship-fire">🔥</div>}
-      {sunk && <div className="bs-ship-sunk-x">✕</div>}
+      <img
+        src={src}
+        alt={ship.name}
+        draggable={false}
+        style={{ width: '100%', height: '100%', objectFit: 'fill' }}
+      />
     </div>
   );
 };
 
-// ── Main game component ───────────────────────────────────────────────────
+// ── Main game component ────────────────────────────────────────────────────
 export default function BattleshipGame({ onBack }) {
-  // Game phases: 'placement' | 'battle' | 'over'
-  const [phase, setPhase]         = useState('placement');
+  const [phase, setPhase]             = useState('placement');
   const [playerBoard, setPlayerBoard] = useState(() => createEmptyBoard());
-  const [enemyBoard]              = useState(() => randomFleet());
-  const [playerShots, setPlayerShots] = useState({});  // shots on enemy
-  const [aiShots, setAiShots]         = useState({});  // shots on player
+  const [enemyBoard]                  = useState(() => randomFleet());
+  const [playerShots, setPlayerShots] = useState({});
+  const [aiShots, setAiShots]         = useState({});
   const [playerSunk, setPlayerSunk]   = useState(new Set());
   const [enemySunk, setEnemySunk]     = useState(new Set());
 
-  // Placement state
-  const [shipIdx,  setShipIdx]  = useState(0);
-  const [horiz,    setHoriz]    = useState(true);
-  const [hover,    setHover]    = useState(null);  // { row, col }
+  const [shipIdx, setShipIdx] = useState(0);
+  const [horiz,   setHoriz]   = useState(true);
+  const [hover,   setHover]   = useState(null);
 
-  // Battle state
   const [playerTurn, setPlayerTurn] = useState(true);
   const [animating,  setAnimating]  = useState(false);
-  const [aiHits,     setAiHits]     = useState([]);    // coords of live AI hits
+  const [aiHits,     setAiHits]     = useState([]);
   const [winner,     setWinner]     = useState(null);
 
-  // Visual effects
-  const [explosions, setExplosions] = useState([]);  // [{ id, row, col, type, board }]
+  const [explosions, setExplosions] = useState([]);
   const [missile,    setMissile]    = useState(null);
   const [toast,      setToast]      = useState('');
   const [toastKey,   setToastKey]   = useState(0);
   const [score,      setScore]      = useState(0);
 
-  // Refs for computing missile positions
   const playerGridRef = useRef(null);
   const enemyGridRef  = useRef(null);
   const cellSizeRef   = useRef(36);
+  const [cellSize, setCellSize] = useState(36);
 
-  // Measure cell size on mount and resize
   useEffect(() => {
     const measure = () => {
-      if (playerGridRef.current)
-        cellSizeRef.current = playerGridRef.current.getBoundingClientRect().width / BOARD_SIZE;
+      if (playerGridRef.current) {
+        const cs = playerGridRef.current.getBoundingClientRect().width / BOARD_SIZE;
+        cellSizeRef.current = cs;
+        setCellSize(cs);
+      }
     };
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
   }, []);
 
-  // ── Helpers ────────────────────────────────────────────────────────────
   const showToast = useCallback((msg) => {
-    setToast(msg);
-    setToastKey(k => k + 1);
+    setToast(msg); setToastKey(k => k + 1);
   }, []);
 
   const addExplosion = useCallback((row, col, type, board, delay = 0) => {
@@ -116,24 +137,21 @@ export default function BattleshipGame({ onBack }) {
     const fRect = fromRef.current.getBoundingClientRect();
     const tRect = toRef.current.getBoundingClientRect();
     const cs    = tRect.width / BOARD_SIZE;
-
     const fx = fRect.left + fRect.width  / 2;
     const fy = fRect.top  + fRect.height / 2;
     const tx = tRect.left + toCol * cs + cs / 2;
     const ty = tRect.top  + toRow * cs + cs / 2;
-
-    const dx    = tx - fx, dy = ty - fy;
+    const dx = tx - fx, dy = ty - fy;
     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
     const dist  = Math.sqrt(dx * dx + dy * dy);
     const id    = Date.now();
-
     setMissile({ id, fx, fy, angle, dist });
     setTimeout(() => setMissile(m => m?.id === id ? null : m), 520);
   }, []);
 
-  // ── Placement ──────────────────────────────────────────────────────────
-  const currentShip  = SHIPS[shipIdx];
-  const allPlaced    = shipIdx >= SHIPS.length;
+  // ── Placement ─────────────────────────────────────────────────────────
+  const currentShip = SHIPS[shipIdx];
+  const allPlaced   = shipIdx >= SHIPS.length;
 
   const handlePlaceClick = (row, col) => {
     if (allPlaced) return;
@@ -151,7 +169,7 @@ export default function BattleshipGame({ onBack }) {
     showToast('Flota colocada automáticamente');
   };
 
-  // ── Player fires ───────────────────────────────────────────────────────
+  // ── Player fires ──────────────────────────────────────────────────────
   const handleEnemyClick = useCallback((row, col) => {
     if (!playerTurn || animating || phase !== 'battle') return;
     if (playerShots[`${row}-${col}`]) return;
@@ -160,9 +178,9 @@ export default function BattleshipGame({ onBack }) {
     launchMissile(playerGridRef, enemyGridRef, row, col);
 
     setTimeout(() => {
-      const result    = processShot(enemyBoard, playerShots, row, col);
-      const key       = `${row}-${col}`;
-      const newShots  = { ...playerShots, [key]: result.hit ? 'hit' : 'miss' };
+      const result   = processShot(enemyBoard, playerShots, row, col);
+      const key      = `${row}-${col}`;
+      const newShots = { ...playerShots, [key]: result.hit ? 'hit' : 'miss' };
       setPlayerShots(newShots);
       addExplosion(row, col, result.hit ? 'hit' : 'miss', 'enemy');
 
@@ -183,19 +201,14 @@ export default function BattleshipGame({ onBack }) {
         setWinner('player'); setPhase('over'); setAnimating(false); return;
       }
 
-      if (result.hit) {
-        // Keep player's turn on hit
-        setAnimating(false);
-      } else {
-        setPlayerTurn(false);
-        // Pass current state as closure args to avoid stale refs
-        setTimeout(() => doAiTurn(newShots, aiShots, aiHits, newEnemySunk), 1100);
-      }
+      // Always alternate turns (hit does NOT give an extra shot)
+      setPlayerTurn(false);
+      setTimeout(() => doAiTurn(newShots, aiShots, aiHits), 1100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, 500);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerTurn, animating, phase, playerShots, enemyBoard, enemySunk, aiShots, aiHits]);
 
-  // ── AI fires ───────────────────────────────────────────────────────────
+  // ── AI fires ──────────────────────────────────────────────────────────
   const doAiTurn = useCallback((currentPlayerShots, currentAiShots, currentAiHits) => {
     const target = aiTarget(currentAiShots, currentAiHits);
     if (!target) { setAnimating(false); setPlayerTurn(true); return; }
@@ -204,9 +217,9 @@ export default function BattleshipGame({ onBack }) {
     launchMissile(enemyGridRef, playerGridRef, row, col);
 
     setTimeout(() => {
-      const result   = processShot(playerBoard, currentAiShots, row, col);
-      const key      = `${row}-${col}`;
-      const newAi    = { ...currentAiShots, [key]: result.hit ? 'hit' : 'miss' };
+      const result = processShot(playerBoard, currentAiShots, row, col);
+      const key    = `${row}-${col}`;
+      const newAi  = { ...currentAiShots, [key]: result.hit ? 'hit' : 'miss' };
       setAiShots(newAi);
       addExplosion(row, col, result.hit ? 'hit' : 'miss', 'player');
 
@@ -228,14 +241,13 @@ export default function BattleshipGame({ onBack }) {
       if (allSunk(playerBoard, newAi)) {
         setWinner('ai'); setPhase('over'); setAnimating(false); return;
       }
-
       setAnimating(false);
       setPlayerTurn(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, 500);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playerBoard, addExplosion, launchMissile]);
 
-  // ── Reset ──────────────────────────────────────────────────────────────
+  // ── Reset ─────────────────────────────────────────────────────────────
   const handleReset = () => {
     setPhase('placement');
     setPlayerBoard(createEmptyBoard());
@@ -248,23 +260,21 @@ export default function BattleshipGame({ onBack }) {
     setToast(''); setScore(0);
   };
 
-  // ── Compute placed ships for rendering ─────────────────────────────────
-  // Extract ship positions from board for ShipArt rendering
+  // ── Compute placed ships ───────────────────────────────────────────────
   const getPlacedShips = (board) => {
     const placed = {};
-    for (let r = 0; r < BOARD_SIZE; r++) {
+    for (let r = 0; r < BOARD_SIZE; r++)
       for (let c = 0; c < BOARD_SIZE; c++) {
         const id = board[r][c];
         if (!id) continue;
         if (!placed[id]) placed[id] = { id, cells: [] };
         placed[id].cells.push({ r, c });
       }
-    }
     return Object.values(placed).map(({ id, cells }) => {
       const sorted = cells.sort((a, b) => a.r - b.r || a.c - b.c);
-      const horiz  = cells[0].r === cells[cells.length - 1].r;
-      const ship   = SHIPS.find(s => s.id === id);
-      return { ship, row: sorted[0].r, col: sorted[0].c, horiz };
+      const isHoriz = cells[0].r === cells[cells.length - 1].r;
+      const ship    = SHIPS.find(s => s.id === id);
+      return { ship, row: sorted[0].r, col: sorted[0].c, horiz: isHoriz };
     });
   };
 
@@ -274,9 +284,8 @@ export default function BattleshipGame({ onBack }) {
     const shots   = isPlayer ? aiShots     : playerShots;
     const sunkSet = isPlayer ? playerSunk  : enemySunk;
     const gridRef = isPlayer ? playerGridRef : enemyGridRef;
-    const cs      = cellSizeRef.current;
+    const cs      = cellSize;
 
-    // Preview during placement (player board only)
     const prevCells = new Set();
     let   prevValid = false;
     if (isPlayer && phase === 'placement' && !allPlaced && hover) {
@@ -285,57 +294,40 @@ export default function BattleshipGame({ onBack }) {
       pc.forEach(({ row, col }) => prevCells.add(`${row}-${col}`));
     }
 
-    const placedShips = phase !== 'placement' || isPlayer
-      ? getPlacedShips(isPlayer ? playerBoard : (phase === 'over' ? enemyBoard : createEmptyBoard()))
-      : getPlacedShips(playerBoard);
-
-    // On enemy board during placement, show nothing; during battle/over show sunk ships
     const visibleEnemyShips = !isPlayer
       ? getPlacedShips(enemyBoard).filter(({ ship }) => sunkSet.has(ship.id))
       : [];
-
-    const shipsToRender = isPlayer ? placedShips : visibleEnemyShips;
+    const shipsToRender = isPlayer ? getPlacedShips(playerBoard) : visibleEnemyShips;
 
     return (
       <div className="bs-grid-wrap">
-        {/* Coordinate labels */}
         <div className="bs-corner" />
         {COLS.map(c => <div key={c} className="bs-col-label">{c}</div>)}
-
         {ROWS.map((rowNum, rIdx) => (
           <div key={rIdx} className="bs-row-label">{rowNum}</div>
         ))}
 
-        {/* Cells */}
-        <div
-          className="bs-grid"
-          ref={gridRef}
-        >
+        <div className="bs-grid" ref={gridRef}>
+          {/* Ocean tile background */}
+          <div className="bs-ocean-bg" style={{ backgroundImage: `url(${imgOcean})` }} />
+
           {Array.from({ length: BOARD_SIZE }, (_, r) =>
             Array.from({ length: BOARD_SIZE }, (_, c) => {
-              const key   = `${r}-${c}`;
-              const shot  = shots[key];
+              const key    = `${r}-${c}`;
+              const shot   = shots[key];
               const shipId = board[r][c];
               const isSunk = sunkSet.has(shipId);
-              const exp   = explosions.find(e => e.row === r && e.col === c &&
-                              e.board === (isPlayer ? 'player' : 'enemy'));
+              const exp    = explosions.find(e => e.row === r && e.col === c &&
+                               e.board === (isPlayer ? 'player' : 'enemy'));
 
               let cls = 'bs-cell';
-
-              if (isPlayer) {
-                if (shot === 'hit') cls += isSunk ? ' bs-cell--sunk' : ' bs-cell--hit';
-                else if (shot === 'miss') cls += ' bs-cell--miss';
-              } else {
-                // Enemy: hide ships until sunk
-                if (shot === 'hit') cls += isSunk ? ' bs-cell--sunk' : ' bs-cell--hit';
-                else if (shot === 'miss') cls += ' bs-cell--miss';
-                else if (isSunk) cls += ' bs-cell--sunk';
-                else {
-                  cls += ' bs-cell--hidden';
-                  if (playerTurn && !animating && phase === 'battle') cls += ' bs-cell--shootable';
-                }
+              if (shot === 'hit')  cls += isSunk ? ' bs-cell--sunk' : ' bs-cell--hit';
+              else if (shot === 'miss') cls += ' bs-cell--miss';
+              else if (!isPlayer && isSunk) cls += ' bs-cell--sunk';
+              else if (!isPlayer) {
+                cls += ' bs-cell--hidden';
+                if (playerTurn && !animating && phase === 'battle') cls += ' bs-cell--shootable';
               }
-
               if (prevCells.has(key))
                 cls += prevValid ? ' bs-cell--preview-ok' : ' bs-cell--preview-bad';
 
@@ -351,8 +343,6 @@ export default function BattleshipGame({ onBack }) {
                   onMouseEnter={isPlayer && phase === 'placement' ? () => setHover({ row: r, col: c }) : undefined}
                   onMouseLeave={isPlayer && phase === 'placement' ? () => setHover(null) : undefined}
                 >
-                  {shot === 'hit'  && <div className="bs-hit-marker" />}
-                  {shot === 'miss' && <div className="bs-miss-marker" />}
                   {exp && <div className={`bs-explosion bs-explosion--${exp.type}`} />}
                 </div>
               );
@@ -362,7 +352,6 @@ export default function BattleshipGame({ onBack }) {
           {/* Ship art layer */}
           {shipsToRender.map(({ ship, row, col, horiz: sh }) => {
             const hits  = shipCells(board, ship.id).filter(k => shots[k] === 'hit');
-            const isHit = hits.length > 0;
             return (
               <ShipArt
                 key={ship.id}
@@ -371,16 +360,33 @@ export default function BattleshipGame({ onBack }) {
                 horiz={sh}
                 cellSize={cs}
                 sunk={sunkSet.has(ship.id)}
-                hit={isHit}
+                hit={hits.length > 0}
               />
             );
           })}
+
+          {/* Hit/miss markers — rendered after ship art so always on top */}
+          {Array.from({ length: BOARD_SIZE }, (_, r) =>
+            Array.from({ length: BOARD_SIZE }, (_, c) => {
+              const shot = shots[`${r}-${c}`];
+              if (!shot) return null;
+              return (
+                <img
+                  key={`marker-${r}-${c}`}
+                  src={shot === 'hit' ? imgHit : imgSplash}
+                  className="bs-marker-img"
+                  alt={shot}
+                  style={{ left: c * cs + cs * 0.08, top: r * cs + cs * 0.08, width: cs * 0.84, height: cs * 0.84 }}
+                />
+              );
+            })
+          )}
         </div>
       </div>
     );
   };
 
-  // ── Ship inventory (bottom panel) ──────────────────────────────────────
+  // ── Ship inventory ────────────────────────────────────────────────────
   const renderInventory = (ships, sunkSet, board, shots) => (
     <div className="bs-inventory">
       {ships.map(ship => {
@@ -390,12 +396,13 @@ export default function BattleshipGame({ onBack }) {
         const isSunk   = sunkSet.has(ship.id);
         return (
           <div key={ship.id} className={`bs-inv-ship${isSunk ? ' bs-inv-ship--sunk' : ''}`}>
-            <span className="bs-inv-emoji">{ship.emoji}</span>
+            <img
+              src={SHIP_IMGS[ship.id]?.horiz || imgFragata}
+              alt={ship.name}
+              className="bs-inv-ship-img"
+            />
             <div className="bs-inv-bar-wrap">
-              <div
-                className="bs-inv-bar"
-                style={{ width: `${pct}%`, '--ship-color': ship.color }}
-              />
+              <div className="bs-inv-bar" style={{ width: `${pct}%`, '--ship-color': ship.color }} />
             </div>
           </div>
         );
@@ -403,11 +410,11 @@ export default function BattleshipGame({ onBack }) {
     </div>
   );
 
-  // ── JSX ────────────────────────────────────────────────────────────────
+  // ── JSX ───────────────────────────────────────────────────────────────
   return (
     <div className="bs-app">
 
-      {/* ── Top bar ──────────────────────────────────────────────────── */}
+      {/* ── Top bar ────────────────────────────────────────────────── */}
       <div className="bs-topbar">
         <div className="bs-topbar-left">
           <button className="back-btn" onClick={onBack}>← Juegos</button>
@@ -430,7 +437,7 @@ export default function BattleshipGame({ onBack }) {
         </div>
       </div>
 
-      {/* ── PLACEMENT PHASE ──────────────────────────────────────────── */}
+      {/* ── PLACEMENT PHASE ────────────────────────────────────────── */}
       {phase === 'placement' && (
         <div className="bs-placement-wrap">
           <div className="bs-placement-sidebar">
@@ -441,12 +448,16 @@ export default function BattleshipGame({ onBack }) {
                   key={ship.id}
                   className={[
                     'bs-queue-item',
-                    i < shipIdx ? 'bs-queue-item--done' : '',
+                    i < shipIdx  ? 'bs-queue-item--done'   : '',
                     i === shipIdx ? 'bs-queue-item--active' : '',
                   ].join(' ')}
                   style={{ '--ship-color': ship.color }}
                 >
-                  <span className="bs-queue-emoji">{ship.emoji}</span>
+                  <img
+                    src={SHIP_IMGS[ship.id]?.horiz || imgFragata}
+                    alt={ship.name}
+                    className="bs-queue-ship-img"
+                  />
                   <div className="bs-queue-info">
                     <span className="bs-queue-name">{ship.name}</span>
                     <div className="bs-queue-cells">
@@ -489,7 +500,7 @@ export default function BattleshipGame({ onBack }) {
         </div>
       )}
 
-      {/* ── BATTLE PHASE ─────────────────────────────────────────────── */}
+      {/* ── BATTLE PHASE ───────────────────────────────────────────── */}
       {phase === 'battle' && (
         <div className="bs-battle-wrap">
           <div className="bs-battle-board-col">
@@ -502,9 +513,7 @@ export default function BattleshipGame({ onBack }) {
 
           <div className="bs-battle-divider">
             <div className="bs-radar">
-              <div className="bs-radar-inner">
-                <div className="bs-radar-sweep" />
-              </div>
+              <img src={imgRadar} alt="radar" className="bs-radar-img" />
               <span className="bs-radar-label">RADAR</span>
             </div>
           </div>
@@ -519,15 +528,13 @@ export default function BattleshipGame({ onBack }) {
         </div>
       )}
 
-      {/* ── Missile ──────────────────────────────────────────────────── */}
+      {/* ── Missile ─────────────────────────────────────────────────── */}
       <Missile missile={missile} />
 
-      {/* ── Toast ────────────────────────────────────────────────────── */}
-      {toast && (
-        <div className="bs-toast" key={toastKey}>{toast}</div>
-      )}
+      {/* ── Toast ───────────────────────────────────────────────────── */}
+      {toast && <div className="bs-toast" key={toastKey}>{toast}</div>}
 
-      {/* ── GAME OVER ────────────────────────────────────────────────── */}
+      {/* ── GAME OVER ───────────────────────────────────────────────── */}
       {phase === 'over' && (
         <div className="bs-overlay">
           <div className={`bs-over-card ${winner === 'player' ? 'bs-over-card--win' : 'bs-over-card--lose'}`}>
@@ -541,12 +548,8 @@ export default function BattleshipGame({ onBack }) {
                 : 'El enemigo destruyó toda tu flota.'}
             </p>
             <div className="bs-over-btns">
-              <button className="bs-btn bs-btn--primary" onClick={handleReset}>
-                Jugar de nuevo
-              </button>
-              <button className="bs-btn bs-btn--secondary" onClick={onBack}>
-                ← Menú
-              </button>
+              <button className="bs-btn bs-btn--primary" onClick={handleReset}>Jugar de nuevo</button>
+              <button className="bs-btn bs-btn--secondary" onClick={onBack}>← Menú</button>
             </div>
           </div>
         </div>
