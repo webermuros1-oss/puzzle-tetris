@@ -50,14 +50,31 @@ export const LEVEL_1 = {
 
   // Decoraciones (solo visuales, sin colisión)
   decorations: [
-    { type: 'tree',    x: 80,   y: GROUND_Y - 60, w: 24, h: 60 },
-    { type: 'tree',    x: 220,  y: GROUND_Y - 70, w: 24, h: 70 },
-    { type: 'tree',    x: 850,  y: GROUND_Y - 65, w: 24, h: 65 },
-    { type: 'tree',    x: 980,  y: GROUND_Y - 55, w: 24, h: 55 },
-    { type: 'tree',    x: 2600, y: GROUND_Y - 75, w: 24, h: 75 },
-    { type: 'house',   x: 160,  y: GROUND_Y - 72, w: 64, h: 72 },
-    { type: 'house',   x: 1850, y: GROUND_Y - 80, w: 80, h: 80 },
-    { type: 'tower',   x: 2080, y: GROUND_Y - 120, w: 40, h: 120 },
+    // Árboles
+    { type: 'tree',   x: 80,   y: GROUND_Y - 60, w: 24, h: 60 },
+    { type: 'tree',   x: 220,  y: GROUND_Y - 70, w: 24, h: 70 },
+    { type: 'tree',   x: 850,  y: GROUND_Y - 65, w: 24, h: 65 },
+    { type: 'tree',   x: 980,  y: GROUND_Y - 55, w: 24, h: 55 },
+    { type: 'tree',   x: 2600, y: GROUND_Y - 75, w: 24, h: 75 },
+    // Casas y torres
+    { type: 'house',  x: 160,  y: GROUND_Y - 72, w: 64, h: 72 },
+    { type: 'house',  x: 1850, y: GROUND_Y - 80, w: 80, h: 80 },
+    { type: 'tower',  x: 2080, y: GROUND_Y - 120, w: 40, h: 120 },
+    // Cañones en primer plano (usando sprite cañon.png)
+    { type: 'cannon', x: 340,  y: GROUND_Y - 26, w: 52, h: 26 },
+    { type: 'cannon', x: 1100, y: GROUND_Y - 26, w: 52, h: 26 },
+    { type: 'cannon', x: 2200, y: GROUND_Y - 26, w: 52, h: 26 },
+    { type: 'cannon', x: 3600, y: GROUND_Y - 26, w: 52, h: 26 },
+    { type: 'cannon', x: 4300, y: GROUND_Y - 26, w: 52, h: 26 },
+    // Barriles ambiente (usando sprite barril.png)
+    { type: 'barrel', x: 460,  y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 480,  y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 1350, y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 1370, y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 2450, y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 3200, y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 3220, y: GROUND_Y - 22, w: 18, h: 22 },
+    { type: 'barrel', x: 4150, y: GROUND_Y - 22, w: 18, h: 22 },
     { type: 'tower',   x: 2420, y: GROUND_Y - 120, w: 40, h: 120 },
     { type: 'cannon',  x: 1300, y: GROUND_Y - 24, w: 48, h: 24 },
     { type: 'cannon',  x: 3100, y: GROUND_Y - 24, w: 48, h: 24 },
