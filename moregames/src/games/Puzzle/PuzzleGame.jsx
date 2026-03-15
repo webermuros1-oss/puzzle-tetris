@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { resumeAudio, sfxPzPlace, sfxPzClear, sfxPzBoom, sfxPzGameOver, startPuzzleMusic, stopPuzzleMusic } from '../../utils/synthSounds.js';
 import Board from './components/Board';
 import PieceContainer from './components/PieceContainer';
 import DragGhost from './components/DragGhost';
@@ -63,6 +64,11 @@ function PuzzleGame({ onBack }) {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  useEffect(() => {
+    startPuzzleMusic();
+    return () => stopPuzzleMusic();
+  }, []);
+
   // ── Lógica compartida de movimiento del puntero ─────────────────────────
   const updatePointer = (clientX, clientY) => {
     setPointerPos({ x: clientX, y: clientY });
@@ -113,6 +119,9 @@ function PuzzleGame({ onBack }) {
     const currentBoard = boardStateRef.current;
     const currentPieces = piecesRef.current;
 
+    resumeAudio();
+    sfxPzPlace();
+
     const withPiece = placePiece(currentBoard, ds.piece, hc.row, hc.col);
     const linesToClear = getLinesToClear(withPiece);
     const { newBoard: clearedBoard, linesCleared } = clearLines(withPiece);
@@ -136,6 +145,8 @@ function PuzzleGame({ onBack }) {
     const nextPieces = allUsed ? generateThreePieces() : newPieces;
 
     if (linesToClear.size > 0) {
+      sfxPzClear();
+      if (linesCleared > 1) sfxPzBoom();
       setBoard(withPiece);
       setFlashCells(linesToClear);
 
@@ -181,14 +192,12 @@ function PuzzleGame({ onBack }) {
         setFlashCells(new Set());
         setBoard(clearedBoard);
         setPieces(nextPieces);
-        const available = nextPieces.filter(Boolean);
-        if (!hasAnyValidMove(clearedBoard, available)) setGameOver(true);
+        if (!hasAnyValidMove(clearedBoard, nextPieces.filter(Boolean))) { sfxPzGameOver(); setGameOver(true); }
       }, 420);
     } else {
       setBoard(clearedBoard);
       setPieces(nextPieces);
-      const available = nextPieces.filter(Boolean);
-      if (!hasAnyValidMove(clearedBoard, available)) setGameOver(true);
+      if (!hasAnyValidMove(clearedBoard, nextPieces.filter(Boolean))) { sfxPzGameOver(); setGameOver(true); }
     }
   };
 

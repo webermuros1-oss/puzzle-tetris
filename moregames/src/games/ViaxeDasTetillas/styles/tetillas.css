@@ -1,0 +1,305 @@
+/* ── O viaxe das tetillas — Estilos ─────────────────────────────────────── */
+
+/* ── Pantalla de juego ──────────────────────────────────────────────────── */
+.tt-game-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 100svh;
+  background: #0c1e10;
+  color: #e8f0d8;
+  font-family: 'Poppins', sans-serif;
+  position: relative;
+}
+
+/* ── HUD ─────────────────────────────────────────────────────────────────── */
+.tt-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 720px;
+  padding: 5px 14px;
+  background: rgba(0, 0, 0, 0.72);
+  border-bottom: 2px solid #3a8a40;
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.tt-hud-lives { display: flex; gap: 3px; }
+
+.tt-heart { font-size: 1rem; }
+
+.tt-hud-level {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  color: #80d880;
+  text-transform: uppercase;
+}
+
+.tt-hud-score {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #ffe060;
+  min-width: 82px;
+  text-align: right;
+}
+
+.tt-hud-back {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid #556655;
+  color: #aac0aa;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s;
+}
+.tt-hud-back:hover { background: rgba(80,140,80,0.4); }
+
+/* ── Canvas ──────────────────────────────────────────────────────────────── */
+.tetillas-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  flex: 1;
+}
+
+.tetillas-canvas {
+  display: block;
+  width: 100%;
+  max-width: 720px;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background: #4a8fc4;   /* color de fallback mientras carga el fondo */
+}
+
+/* ── Controles táctiles ──────────────────────────────────────────────────── */
+.tetillas-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 720px;
+  padding: 8px 16px;
+  box-sizing: border-box;
+}
+
+/* ── Cruz Nintendo ───────────────────────────────────────────────────────── */
+.tt-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, 46px);
+  grid-template-rows: repeat(3, 46px);
+  gap: 3px;
+}
+
+.tt-dpad-empty { /* celdas vacías de las esquinas */ }
+
+.tt-dpad-center {
+  background: rgba(255,255,255,0.07);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+/* Botón base para los brazos de la cruceta */
+.tt-btn {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  border: 2px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.09);
+  color: #e8f0d8;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s, border-color 0.08s;
+}
+.tt-btn:active {
+  background: rgba(80,200,80,0.35);
+  border-color: #60cc60;
+}
+
+.tt-dpad-left,
+.tt-dpad-right { background: rgba(60,180,60,0.14); }
+
+.tt-dpad-up {
+  background: rgba(200,160,60,0.18);
+  border-color: rgba(240,200,80,0.35);
+}
+.tt-dpad-up:active { background: rgba(240,200,60,0.42); }
+
+.tt-dpad-down {
+  background: rgba(255,255,255,0.05);
+  opacity: 0.45; /* down no hace nada, aparece apagado */
+}
+
+/* ── Botones de acción (derecha) ─────────────────────────────────────────── */
+.tt-action-btns {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Botón de disparo independiente */
+.tt-shoot {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(100,220,220,0.4);
+  background: rgba(60,200,200,0.2);
+  color: #e8f0d8;
+  font-size: 1.5rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.08s;
+}
+.tt-shoot:active { background: rgba(60,220,220,0.45); }
+
+/* ── Menú / pantallas de estado ─────────────────────────────────────────── */
+.tt-menu {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100svh;
+  width: 100%;
+  background: linear-gradient(160deg, #082010 0%, #0e3018 50%, #082010 100%);
+  gap: 18px;
+  padding: 28px 24px;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+  color: #d8f0d0;
+  text-align: center;
+  position: relative;
+}
+
+.tt-title-block { display: flex; flex-direction: column; gap: 6px; }
+
+.tt-game-title {
+  font-size: clamp(1.5rem, 5.5vw, 2.6rem);
+  font-weight: 900;
+  color: #80ee80;
+  text-shadow:
+    0 0 24px rgba(80, 240, 80, 0.55),
+    2px 2px 0 #0a3010;
+  letter-spacing: 1.5px;
+  line-height: 1.1;
+}
+
+.tt-game-subtitle {
+  font-size: clamp(0.75rem, 2.2vw, 0.95rem);
+  color: #70aa70;
+  font-style: italic;
+}
+
+.tt-controls-info {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(100, 220, 100, 0.22);
+  border-radius: 10px;
+  padding: 14px 22px;
+  line-height: 2;
+  font-size: clamp(0.7rem, 2.2vw, 0.88rem);
+  max-width: 320px;
+}
+
+.tt-controls-info kbd {
+  background: rgba(80,200,80,0.18);
+  border: 1px solid #4aaa4a;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.8em;
+  font-family: monospace;
+  color: #b0e8b0;
+}
+
+.tt-start-btn {
+  padding: 14px 38px;
+  font-size: clamp(0.9rem, 3vw, 1.1rem);
+  font-weight: 800;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #1a6820, #48c848, #1a6820);
+  color: #e8ffe8;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  box-shadow: 0 4px 18px rgba(60, 200, 60, 0.35);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.tt-start-btn:active {
+  transform: scale(0.97);
+  box-shadow: 0 2px 8px rgba(60,200,60,0.25);
+}
+
+.tt-back-btn {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid #446644;
+  color: #88aa88;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.tt-back-btn-center {
+  background: none;
+  border: 1px solid #446644;
+  color: #88aa88;
+  padding: 8px 22px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.tt-score-display {
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  color: #ffe060;
+}
+
+/* Variantes de color para gameover / win */
+.tt-gameover .tt-game-title {
+  color: #ee4444;
+  text-shadow: 0 0 24px rgba(220,0,0,0.5), 2px 2px 0 #300a0a;
+}
+.tt-win .tt-game-title {
+  color: #ffe060;
+  text-shadow: 0 0 24px rgba(255,200,0,0.5), 2px 2px 0 #3a3000;
+}
+
+/* ── Landscape ──────────────────────────────────────────────────────────── */
+@media (orientation: landscape) and (max-height: 500px) {
+  .tt-hud         { padding: 3px 10px; }
+  .tetillas-canvas { max-width: 100%; }
+  .tetillas-controls { padding: 4px 10px; }
+  .tt-btn         { width: 44px; height: 44px; font-size: 1rem; }
+}

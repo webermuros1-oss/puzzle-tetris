@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PuzzleGame     from './games/Puzzle/PuzzleGame';
 import BattleshipGame from './games/Battleship/BattleshipGame';
 import SnowBrosGame   from './games/SnowBros/SnowBrosGame';
-import TerciosGame    from './games/TerciosFlandesRunGun/TerciosGame';
+import TetillasGame   from './games/ViaxeDasTetillas/TetillasGame';
 import appLogo        from './assets/logo app juegos.jpg';
 import './dashboard.css';
 
@@ -27,7 +27,7 @@ const GAMES = [
   },
   {
     id: 'snowbros',
-    name: 'Snow Bros',
+    name: 'Snow Kids',
     tagline: 'Congela enemigos · ¡a rodar!',
     emoji: '❄',
     accent: '#7dd3fc',
@@ -35,12 +35,12 @@ const GAMES = [
     badge: 'NUEVO',
   },
   {
-    id: 'tercios',
-    name: 'Tercios en Flandes',
-    tagline: 'Run & Gun — Siglo XVII',
-    emoji: '⚔️',
-    accent: '#ffd700',
-    bg: 'linear-gradient(135deg, #1a0f04 0%, #3a1f08 50%, #1a0f04 100%)',
+    id: 'tetillas',
+    name: 'Rompe Queixos',
+    tagline: 'Rompe los quesos',
+    emoji: '🐚',
+    accent: '#48c848',
+    bg: 'linear-gradient(135deg, #062010 0%, #0e3818 50%, #062010 100%)',
     badge: 'NUEVO',
   },
 ];
@@ -51,7 +51,7 @@ export default function App() {
   if (current === 'puzzle')     return <PuzzleGame onBack={() => setCurrent(null)} />;
   if (current === 'battleship') return <BattleshipGame onBack={() => setCurrent(null)} />;
   if (current === 'snowbros')   return <SnowBrosGame onBack={() => setCurrent(null)} />;
-  if (current === 'tercios')    return <TerciosGame onBack={() => setCurrent(null)} />;
+  if (current === 'tetillas')   return <TetillasGame onBack={() => setCurrent(null)} />;
 
   return (
     <div className="dashboard">

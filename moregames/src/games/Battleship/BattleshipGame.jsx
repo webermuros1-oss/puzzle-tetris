@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { resumeAudio, sfxBsFire, sfxBsHit, sfxBsMiss, sfxBsSunk, sfxBsPlace, sfxBsWin, sfxBsLose, startBattleshipMusic, stopBattleshipMusic } from '../../utils/synthSounds.js';
 import {
   BOARD_SIZE, COLS, ROWS, SHIPS,
   createEmptyBoard, canPlace, placeShip, previewCells,
@@ -120,6 +121,11 @@ export default function BattleshipGame({ onBack }) {
     return () => window.removeEventListener('resize', measure);
   }, []);
 
+  useEffect(() => {
+    startBattleshipMusic();
+    return () => stopBattleshipMusic();
+  }, []);
+
   const showToast = useCallback((msg) => {
     setToast(msg); setToastKey(k => k + 1);
   }, []);
@@ -156,6 +162,7 @@ export default function BattleshipGame({ onBack }) {
   const handlePlaceClick = (row, col) => {
     if (allPlaced) return;
     if (!canPlace(playerBoard, row, col, currentShip.size, horiz)) return;
+    resumeAudio(); sfxBsPlace();
     const nb = placeShip(playerBoard, row, col, currentShip.size, horiz, currentShip.id);
     setPlayerBoard(nb);
     const next = shipIdx + 1;
@@ -174,6 +181,7 @@ export default function BattleshipGame({ onBack }) {
     if (!playerTurn || animating || phase !== 'battle') return;
     if (playerShots[`${row}-${col}`]) return;
 
+    resumeAudio(); sfxBsFire();
     setAnimating(true);
     launchMissile(playerGridRef, enemyGridRef, row, col);
 
@@ -186,18 +194,22 @@ export default function BattleshipGame({ onBack }) {
 
       let newEnemySunk = enemySunk;
       if (result.sunk) {
+        sfxBsSunk();
         newEnemySunk = new Set([...enemySunk, result.shipId]);
         setEnemySunk(newEnemySunk);
         setScore(s => s + 500);
         showToast(`💥 ¡Hundiste el ${SHIPS.find(s => s.id === result.shipId)?.name}!`);
       } else if (result.hit) {
+        sfxBsHit();
         setScore(s => s + 100);
         showToast('🎯 ¡Impacto directo!');
       } else {
+        sfxBsMiss();
         showToast('💧 Agua — turno del enemigo');
       }
 
       if (allSunk(enemyBoard, newShots)) {
+        sfxBsWin();
         setWinner('player'); setPhase('over'); setAnimating(false); return;
       }
 
@@ -226,19 +238,23 @@ export default function BattleshipGame({ onBack }) {
       let newHits = currentAiHits;
       if (result.hit) {
         if (result.sunk) {
+          sfxBsSunk();
           newHits = [];
           setPlayerSunk(p => new Set([...p, result.shipId]));
           showToast(`💔 ¡Hundieron tu ${SHIPS.find(s => s.id === result.shipId)?.name}!`);
         } else {
+          sfxBsHit();
           newHits = [...currentAiHits, [row, col]];
           showToast('⚠️ ¡Te han dado!');
         }
       } else {
+        sfxBsMiss();
         showToast('El enemigo falló — ¡Tu turno!');
       }
       setAiHits(newHits);
 
       if (allSunk(playerBoard, newAi)) {
+        sfxBsLose();
         setWinner('ai'); setPhase('over'); setAnimating(false); return;
       }
       setAnimating(false);
